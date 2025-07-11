@@ -94,6 +94,7 @@ _minted*
 # === Herramientas de Diseño Hardware (KiCad, Eagle, etc.) ===================
 # Archivos de respaldo y caché generados por herramientas de diseño de PCB/esquemas.
 # KiCad
+*-backups/
 *.bak
 *-cache.lib
 *.kicad_prl

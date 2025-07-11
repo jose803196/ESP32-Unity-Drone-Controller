@@ -1,0 +1,105 @@
+(footprint "XDCR_PS1240P02BT"
+	(version 20241229)
+	(generator "pcbnew")
+	(generator_version "9.0")
+	(layer "F.Cu")
+	(property "Reference" "REF**"
+		(at -0.555 -7.889 0)
+		(layer "F.SilkS")
+		(uuid "0c7a2448-2dae-4b2e-bcd6-f001ec7d16c7")
+		(effects
+			(font
+				(size 1.4 1.4)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Value" "XDCR_PS1240P02BT"
+		(at 9.224 8.111 0)
+		(layer "F.Fab")
+		(uuid "15b2655e-838a-49df-aac2-60a6d2384a86")
+		(effects
+			(font
+				(size 1.4 1.4)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Datasheet" ""
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "f1c3ec5f-1d57-4461-a115-fa14c15807ab")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Description" ""
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "08477366-3b32-4bce-8520-709ffe5ff8ea")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(attr through_hole)
+	(fp_circle
+		(center 0 0)
+		(end 6.1 0)
+		(stroke
+			(width 0.127)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.SilkS")
+		(uuid "3beb6327-43f2-4a6e-b298-65c2e00ae7d2")
+	)
+	(fp_circle
+		(center 0 0)
+		(end 6.35 0)
+		(stroke
+			(width 0.05)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.CrtYd")
+		(uuid "8defa1b4-6bea-4367-9809-8ca8dbc3ab23")
+	)
+	(fp_circle
+		(center 0 0)
+		(end 6.1 0)
+		(stroke
+			(width 0.127)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.Fab")
+		(uuid "dea75a2b-48df-479f-a1ef-f227787590d5")
+	)
+	(pad "1" thru_hole circle
+		(at -2.5 0)
+		(size 1.28 1.28)
+		(drill 0.85)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(solder_mask_margin 0.102)
+		(uuid "173423d8-ce3d-4e40-b04e-ce49144ec777")
+	)
+	(pad "2" thru_hole circle
+		(at 2.5 0)
+		(size 1.28 1.28)
+		(drill 0.85)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(solder_mask_margin 0.102)
+		(uuid "71ec3775-44a4-46d1-abe6-b33a803ead40")
+	)
+	(embedded_fonts no)
+)

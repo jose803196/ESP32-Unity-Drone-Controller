@@ -92,7 +92,7 @@ Follow these steps to get the project up and running on your local machine.
 
 ### Prerequisites
 
-*   **Hardware:** All components listed in `1_Hardware/BillOfMaterials.md`.
+*   **Hardware:** All components listed in `1_Hardware`.
 *   **Software:**
     *   Unity Hub & Unity Editor (version `202X.X.Xf1` recommended).
     *   ESP-IDF (version `vX.X` recommended).
