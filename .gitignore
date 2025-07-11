@@ -50,12 +50,13 @@ ExportedObj/
 # === ESP-IDF (Firmware) =====================================================
 # La carpeta 'build' contiene todos los objetos compilados y el firmware final.
 # Se genera cada vez que compilas, así que no debe ser versionada.
-/2_Firmware_ESP32/build/
+/Firmware_ESP32/build/
 
 # Archivos de configuración antiguos o generados. El 'sdkconfig' principal sí
 # se versiona, pero estos no son necesarios.
-/2_Firmware_ESP32/sdkconfig.old
-/2_Firmware_ESP32/sdkconfig.h
+/Firmware_ESP32/sdkconfig.old
+/Firmware_ESP32/sdkconfig.h
+/Firmware_ESP32/.pio
 
 
 # === LaTeX (Documentación) ==================================================
