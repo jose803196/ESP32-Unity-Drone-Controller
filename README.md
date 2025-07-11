@@ -128,7 +128,7 @@ The repository is organized into four main sections for clarity and modularity:
 
 ## 👤 Author
 
-**[Tu Nombre Completo]**
+**Jose G. Lopez B.**
 
 *   <a href="https://github.com/jose803196">
       <img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"/>
