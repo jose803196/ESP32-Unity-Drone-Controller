@@ -1,0 +1,122 @@
+# ##############################################################################
+# ## .gitignore para Proyecto Integrado (Unity, ESP-IDF, LaTeX, Hardware)    ##
+# ##############################################################################
+
+# === Reglas Generales =======================================================
+# Ignorar archivos temporales comunes y de caché de los sistemas operativos
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+
+# === Unity ==================================================================
+# Estas carpetas son generadas localmente por Unity y pueden ser enormes.
+# Contienen datos de caché, configuraciones locales y compilaciones.
+# NUNCA deben estar en el repositorio.
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uild/
+/[Bb]uilds/
+/[Ll]ogs/
+/[Mm]emoryCaptures/
+/[Uu]ser[Ss]ettings/
+
+# Archivos de solución y proyecto autogenerados por IDEs (Visual Studio, Rider, etc.)
+# Se generan a partir del proyecto de Unity, así que no es necesario versionarlos.
+ExportedObj/
+.vscode/
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+
+# === ESP-IDF (Firmware) =====================================================
+# La carpeta 'build' contiene todos los objetos compilados y el firmware final.
+# Se genera cada vez que compilas, así que no debe ser versionada.
+/2_Firmware_ESP32/build/
+
+# Archivos de configuración antiguos o generados. El 'sdkconfig' principal sí
+# se versiona, pero estos no son necesarios.
+/2_Firmware_ESP32/sdkconfig.old
+/2_Firmware_ESP32/sdkconfig.h
+
+
+# === LaTeX (Documentación) ==================================================
+# LaTeX genera una gran cantidad de archivos auxiliares durante la compilación.
+# Solo necesitas versionar los archivos fuente (.tex) y las imágenes.
+# El PDF final es opcional, pero se recomienda incluirlo en una carpeta aparte.
+*.aux
+*.acn
+*.acr
+*.alg
+*.glg
+*.glo
+*.gls
+*.ist
+*.fls
+*.log
+*.lof
+*.lot
+*.out
+*.toc
+*.bbl
+*.blg
+*.brf
+*.fdb_latexmk
+*.nav
+*.snm
+*.vrb
+*.synctex.gz
+_minted*
+*.xdv
+
+# No ignorar la carpeta PDF_Exports aunque esté vacía al principio
+!/4_Documentation/PDF_Exports/.gitkeep
+
+
+# === Herramientas de Diseño Hardware (KiCad, Eagle, etc.) ===================
+# Archivos de respaldo y caché generados por herramientas de diseño de PCB/esquemas.
+# KiCad
+*.bak
+*-cache.lib
+*.kicad_prl
+*.kicad_pro
+_autosave-*
+
+# Eagle
+*.b#?
+*.s#?
+*.l#?
+*.dru
+*.swn
+*.swo
+
+# === Archivos de Compresión ===============================================
+# A menudo se usan para backups temporales
+*.zip
+*.rar
+*.7z
+
+
+# === Blender ================================================================
+# Blender crea archivos de guardado automático. No los necesitamos en el repo.
+*.blend1
+*.blend2
+*.blend@
