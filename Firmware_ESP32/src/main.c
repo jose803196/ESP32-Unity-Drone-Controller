@@ -2,20 +2,17 @@
 #include <string.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "freertos/queue.h"
+#include "freertos/semphr.h" // NUEVO: para notificaciones
 #include "driver/gpio.h"
-#include "driver/uart.h"
 #include "driver/adc.h"
-#include "i2c_teg.h"
+#include "i2c_teg.h" 
 #include "mpu6050.h"
 #include "nvs_flash.h"
-#include "esp_bt.h"
-#include "esp_bt_main.h"
-#include "esp_gap_bt_api.h"
-#include "esp_bt_device.h"
-#include "esp_spp_api.h"
+#include "esp_wifi.h"
+#include "esp_now.h"
+#include "esp_log.h"
 
-// --- Pines de conexión ---
+// --- Pines ---
 #define BOTON_AVANZAR    GPIO_NUM_32
 #define BOTON_RETROCEDER GPIO_NUM_33
 #define BOTON_IZQUIERDA  GPIO_NUM_25
@@ -25,161 +22,111 @@
 #define JOYSTICK_SW_PIN  GPIO_NUM_27
 #define MOTOR_PIN        GPIO_NUM_18
 #define BUZZER_PIN       GPIO_NUM_19
+#define MOTOR_DURATION_MS   500
+#define BUZZER_DURATION_MS  300
 
-// --- Configuración UART ---
-#define UART_PORT        UART_NUM_0
-#define BUF_SIZE         1024
+// --- MAC del Puente ---
+static uint8_t mac_puente_receptor[] = {0x8C, 0x4F, 0x00, 0xAB, 0x9B, 0x60};
 
-// --- Configuración Bluetooth ---
-#define SPP_SERVER_NAME "DRONE_CONTROLLER_SPP"
-#define ESP_DEVICE_NAME "DroneLink_Controller"
+// --- NUEVO: Estados del Juego ---
+typedef enum {
+    RUNNING,
+    CRASHED
+} GameState;
+GameState current_state = RUNNING;
 
-// --- Variables globales Bluetooth ---
-uint32_t spp_handle = 0;
-
-// --- Prototipos de funciones Bluetooth ---
-void configurar_bluetooth();
-static void esp_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param);
-void enviar_por_bluetooth(const char* datos);
-
-// --- Tiempos de feedback ---
-#define MOTOR_DURATION_MS   500  // 0.5 segundos de vibración
-#define BUZZER_DURATION_MS  300  // 0.3 segundos de sonido
-#define FEEDBACK_DELAY_MS   100  // Delay entre activaciones
-
-// --- Estados del juego ---
-typedef enum { RUNNING, CRASHED } GameState;
-
-// --- Estructura para datos de sensores ---
+// --- Estructura de datos de Sensores ---
 typedef struct {
     int btn_avanzar, btn_retroceder, btn_izquierda, btn_derecha, btn_joystick;
     int joy_x, joy_y;
     mpu6050_data_t mpu_data;
 } SensorData;
 
-// --- Variables globales ---
-QueueHandle_t sensor_data_queue;
-GameState current_state = RUNNING;
-i2c_master_dev_handle_t mpu6050_dev_handle = NULL;
-TaskHandle_t motor_task_handle = NULL;
-TaskHandle_t buzzer_task_handle = NULL;
+// --- NUEVO: Handle para la tarea de feedback ---
+TaskHandle_t feedback_task_handle = NULL;
 
-// --- Prototipos de funciones ---
+// --- Prototipos ---
+static void espnow_recv_cb(const uint8_t *mac_addr, const uint8_t *data, int len);
 void configurar_gpios();
 void configurar_joystick_adc();
-void configurar_mpu6050();
-void configurar_uart();
-void enviar_por_uart(const char* datos);
-
-// --- Tareas ---
+void configurar_mpu6050(); 
+i2c_master_dev_handle_t mpu6050_dev_handle = NULL;
 void sensor_task(void *pvParameters);
-void uart_task(void *pvParameters);
-void motor_task(void *pvParameters);
-void buzzer_task(void *pvParameters);
+void feedback_task(void *pvParameters); // NUEVO
 
-// --- Modificación de app_main ---
 void app_main(void) {
-    // Inicialización de NVS (necesario para Bluetooth)
-    esp_err_t ret = nvs_flash_init();
-    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-        ESP_ERROR_CHECK(nvs_flash_erase());
-        ret = nvs_flash_init();
-    }
-    ESP_ERROR_CHECK(ret);
+    nvs_flash_init();
+    ESP_ERROR_CHECK(esp_netif_init());
+    ESP_ERROR_CHECK(esp_event_loop_create_default());
+    wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+    ESP_ERROR_CHECK(esp_wifi_init(&cfg));
+    ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
+    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
+    ESP_ERROR_CHECK(esp_wifi_start());
+    ESP_ERROR_CHECK(esp_now_init());
 
-    // Inicialización de hardware
+    ESP_ERROR_CHECK(esp_now_register_recv_cb(espnow_recv_cb));
+    
+    esp_now_peer_info_t peer_info = {};
+    memcpy(peer_info.peer_addr, mac_puente_receptor, 6);
+    peer_info.channel = 0;
+    peer_info.encrypt = false;
+    ESP_ERROR_CHECK(esp_now_add_peer(&peer_info));
+    
     configurar_gpios();
     configurar_joystick_adc();
     configurar_mpu6050();
-    configurar_uart();
-    configurar_bluetooth();  // Nueva función de configuración
     
-    // Crear cola para datos de sensores
-    sensor_data_queue = xQueueCreate(5, sizeof(SensorData));
+    xTaskCreate(sensor_task, "sensor_task", 4096, NULL, 10, NULL);
+    // --- NUEVO: Crear la tarea de feedback, que empieza dormida ---
+    xTaskCreate(feedback_task, "feedback_task", 2048, NULL, 5, &feedback_task_handle);
     
-    if (sensor_data_queue != NULL) {
-        // Crear tareas
-        xTaskCreate(sensor_task, "sensor_task", 4096, NULL, 10, NULL);
-        xTaskCreate(uart_task, "uart_task", 4096, NULL, 9, NULL); // Para depuración
-        xTaskCreate(motor_task, "motor_task", 2048, NULL, 5, &motor_task_handle);
-        xTaskCreate(buzzer_task, "buzzer_task", 2048, NULL, 5, &buzzer_task_handle);
+    ESP_LOGI("CONTROLADOR", "Sistema robusto iniciado.");
+}
+
+// --- NUEVO: Callback de recepción NO BLOQUEANTE ---
+static void espnow_recv_cb(const uint8_t *mac_addr, const uint8_t *data, int len) {
+    if (len > 0) {
+        if (data[0] == 'C' && current_state == RUNNING) {
+            ESP_LOGI("CONTROLADOR", "Comando CRASH recibido. Notificando a la tarea de feedback.");
+            current_state = CRASHED;
+            // Notifica a la tarea de feedback para que se despierte y actúe.
+            // La '1' limpia la cuenta de notificaciones a 1.
+            // pdTRUE indica que no hay que esperar si la cola está llena.
+            xTaskNotifyGive(feedback_task_handle);
+        } else if (data[0] == 'R') {
+            ESP_LOGI("CONTROLADOR", "Comando RESTART recibido.");
+            current_state = RUNNING;
+        }
+    }
+}
+
+// --- NUEVO: Tarea dedicada para el feedback ---
+void feedback_task(void *pvParameters) {
+    while (1) {
+        // La tarea se queda aquí 'bloqueada' (dormida) hasta que recibe una notificación.
+        // ulTaskNotifyTake consume la notificación. pdTRUE limpia el valor a cero.
+        // portMAX_DELAY significa esperar indefinidamente.
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        // Una vez despierta, ejecuta la secuencia de feedback.
+        ESP_LOGI("FEEDBACK", "Activando motor y buzzer...");
+        gpio_set_level(MOTOR_PIN, 1);
+        gpio_set_level(BUZZER_PIN, 1);
         
-        enviar_por_uart("Sistema de control iniciado.\n");
-    } else {
-        printf("Error al crear la cola de datos\n");
+        vTaskDelay(BUZZER_DURATION_MS / portTICK_PERIOD_MS);
+        gpio_set_level(BUZZER_PIN, 0); // Apagar primero el buzzer
+
+        vTaskDelay((MOTOR_DURATION_MS - BUZZER_DURATION_MS) / portTICK_PERIOD_MS);
+        gpio_set_level(MOTOR_PIN, 0); // Apagar el motor
     }
 }
 
-// --- Implementación de tareas ---
 
-// --- Nueva función para configurar Bluetooth ---
-void configurar_bluetooth() {
-    // Liberar memoria si no se usa BLE
-    ESP_ERROR_CHECK(esp_bt_controller_mem_release(ESP_BT_MODE_BLE));
-    
-    // Configurar controlador Bluetooth
-    esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
-    ESP_ERROR_CHECK(esp_bt_controller_init(&bt_cfg));
-    ESP_ERROR_CHECK(esp_bt_controller_enable(ESP_BT_MODE_CLASSIC_BT));
-    
-    // Inicializar Bluedroid
-    ESP_ERROR_CHECK(esp_bluedroid_init());
-    ESP_ERROR_CHECK(esp_bluedroid_enable());
-    
-    // Registrar callback y inicializar SPP
-    ESP_ERROR_CHECK(esp_spp_register_callback(esp_spp_cb));
-    ESP_ERROR_CHECK(esp_spp_init(ESP_SPP_MODE_CB));
-}
-
-// --- Callback de Bluetooth SPP ---
-static void esp_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param) {
-    switch (event) {
-        case ESP_SPP_INIT_EVT:
-            printf("SPP inicializado.\n");
-            esp_bt_dev_set_device_name(ESP_DEVICE_NAME);
-            esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
-            esp_spp_start_srv(ESP_SPP_SEC_NONE, ESP_SPP_ROLE_SLAVE, 0, SPP_SERVER_NAME);
-            break;
-        case ESP_SPP_SRV_OPEN_EVT:
-            printf("Cliente conectado. Handle: %d\n", (int)param->srv_open.handle);
-            spp_handle = param->srv_open.handle;
-            current_state = RUNNING; // Reiniciar estado al conectar
-            break;
-        case ESP_SPP_DATA_IND_EVT: // Evento de datos recibidos
-            printf("Datos recibidos: %.*s\n", param->data_ind.len, (char *)param->data_ind.data);
-            if (param->data_ind.len > 0) {
-                if (param->data_ind.data[0] == 'C' && current_state == RUNNING) {
-                    printf("Comando CRASH recibido por Bluetooth!\n");
-                    current_state = CRASHED;
-                    xTaskNotifyGive(motor_task_handle);
-                    xTaskNotifyGive(buzzer_task_handle);
-                } else if (param->data_ind.data[0] == 'R') {
-                    printf("Comando RESTART recibido por Bluetooth!\n");
-                    current_state = RUNNING;
-                }
-            }
-            break;
-        case ESP_SPP_CLOSE_EVT:
-            printf("Cliente desconectado.\n");
-            spp_handle = 0; // Resetear el handle
-            break;
-        default:
-            break;
-    }
-}
-
-// --- Función para enviar datos por Bluetooth ---
-void enviar_por_bluetooth(const char* datos) {
-    if (spp_handle != 0) {
-        esp_spp_write(spp_handle, strlen(datos), (uint8_t *)datos);
-    }
-}
-
+// La tarea de sensores se mantiene igual, enviando datos continuamente.
 void sensor_task(void *pvParameters) {
     SensorData current_data;
-    
     while (1) {
-        // Leer todos los sensores
         current_data.btn_avanzar = !gpio_get_level(BOTON_AVANZAR);
         current_data.btn_retroceder = !gpio_get_level(BOTON_RETROCEDER);
         current_data.btn_izquierda = !gpio_get_level(BOTON_IZQUIERDA);
@@ -189,101 +136,29 @@ void sensor_task(void *pvParameters) {
         current_data.joy_y = adc1_get_raw(JOYSTICK_Y_PIN);
         mpu6050_read_accel_gyro(mpu6050_dev_handle, &current_data.mpu_data);
         
-        // Enviar datos a la cola
-        xQueueSend(sensor_data_queue, &current_data, 0);
+        esp_now_send(mac_puente_receptor, (uint8_t *)&current_data, sizeof(current_data));
         
-        vTaskDelay(20 / portTICK_PERIOD_MS); // 50 Hz
+        vTaskDelay(50 / portTICK_PERIOD_MS); 
     }
 }
 
-// --- Modificación de la tarea UART para manejar ambos protocolos ---
-void uart_task(void *pvParameters) {
-    char buffer_tx[256];
-    uint8_t buffer_uart_rx[32];
-    SensorData received_data;
-    
-    while (1) {
-        // Leer comandos de UART (para depuración)
-        int len = uart_read_bytes(UART_PORT, buffer_uart_rx, sizeof(buffer_uart_rx) - 1, 20 / portTICK_PERIOD_MS);
-        if (len > 0) {
-            buffer_uart_rx[len] = '\0';
-            
-            if (buffer_uart_rx[0] == 'C' && current_state == RUNNING) {
-                current_state = CRASHED;
-                xTaskNotifyGive(motor_task_handle);
-                xTaskNotifyGive(buzzer_task_handle);
-            } else if (buffer_uart_rx[0] == 'R') {
-                current_state = RUNNING;
-            }
-        }
-        
-        // Procesar datos de sensores si estamos en estado RUNNING
-        if (current_state == RUNNING && xQueueReceive(sensor_data_queue, &received_data, 0) == pdTRUE) {
-            snprintf(buffer_tx, sizeof(buffer_tx), 
-                    "%d,%d,%d,%d,%d,%d,%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n",
-                    received_data.btn_avanzar, received_data.btn_retroceder, 
-                    received_data.btn_izquierda, received_data.btn_derecha,
-                    received_data.joy_x, received_data.joy_y, received_data.btn_joystick,
-                    received_data.mpu_data.ax, received_data.mpu_data.ay, received_data.mpu_data.az,
-                    received_data.mpu_data.gx, received_data.mpu_data.gy, received_data.mpu_data.gz);
-            
-            // Enviar por ambos canales
-            enviar_por_uart(buffer_tx); // Para depuración
-            enviar_por_bluetooth(buffer_tx); // Para comunicación principal
-        }
-        
-        vTaskDelay(10 / portTICK_PERIOD_MS);
-    }
-}
-
-void motor_task(void *pvParameters) {
-    while (1) {
-        // Esperar notificación
-        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-        
-        // Activar motor por el tiempo configurado
-        gpio_set_level(MOTOR_PIN, 1);
-        vTaskDelay(MOTOR_DURATION_MS / portTICK_PERIOD_MS);
-        gpio_set_level(MOTOR_PIN, 0);
-        
-        // Pequeño delay para evitar activaciones repetidas muy rápidas
-        vTaskDelay(FEEDBACK_DELAY_MS / portTICK_PERIOD_MS);
-    }
-}
-
-void buzzer_task(void *pvParameters) {
-    while (1) {
-        // Esperar notificación
-        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-        
-        // Activar buzzer por el tiempo configurado
-        gpio_set_level(BUZZER_PIN, 1);
-        vTaskDelay(BUZZER_DURATION_MS / portTICK_PERIOD_MS);
-        gpio_set_level(BUZZER_PIN, 0);
-        
-        // Pequeño delay para evitar activaciones repetidas muy rápidas
-        vTaskDelay(FEEDBACK_DELAY_MS / portTICK_PERIOD_MS);
-    }
-}
-
-// --- Funciones de configuración ---
-
+// El resto de funciones de configuración se mantienen sin cambios
 void configurar_gpios() {
     gpio_config_t io_conf_in = {
         .pin_bit_mask = (1ULL << BOTON_AVANZAR) | (1ULL << BOTON_RETROCEDER) |
                          (1ULL << BOTON_IZQUIERDA) | (1ULL << BOTON_DERECHA) |
                          (1ULL << JOYSTICK_SW_PIN),
-        .mode = GPIO_MODE_INPUT,
-        .pull_up_en = GPIO_PULLUP_ENABLE,
+        .mode = GPIO_MODE_INPUT, .pull_up_en = GPIO_PULLUP_ENABLE
     };
     gpio_config(&io_conf_in);
 
     gpio_config_t io_conf_out = {
         .pin_bit_mask = (1ULL << MOTOR_PIN) | (1ULL << BUZZER_PIN),
-        .mode = GPIO_MODE_OUTPUT,
-        .pull_down_en = GPIO_PULLDOWN_ENABLE,
+        .mode = GPIO_MODE_OUTPUT
     };
     gpio_config(&io_conf_out);
+    gpio_set_level(MOTOR_PIN, 0);
+    gpio_set_level(BUZZER_PIN, 0);
 }
 
 void configurar_joystick_adc() {
@@ -301,22 +176,4 @@ void configurar_mpu6050() {
     };
     ESP_ERROR_CHECK(i2c_master_bus_add_device(get_i2c_bus_handle(), &dev_cfg, &mpu6050_dev_handle));
     mpu6050_init(mpu6050_dev_handle);
-}
-
-void configurar_uart() {
-    uart_config_t uart_config = {
-        .baud_rate = 115200,
-        .data_bits = UART_DATA_8_BITS,
-        .parity = UART_PARITY_DISABLE,
-        .stop_bits = UART_STOP_BITS_1,
-        .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
-        .source_clk = UART_SCLK_DEFAULT,
-    };
-    uart_driver_install(UART_PORT, BUF_SIZE, BUF_SIZE, 0, NULL, 0);
-    uart_param_config(UART_PORT, &uart_config);
-    uart_set_pin(UART_PORT, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
-}
-
-void enviar_por_uart(const char* datos) {
-    uart_write_bytes(UART_PORT, datos, strlen(datos));
 }
