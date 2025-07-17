@@ -1,8 +1,13 @@
+// ESTE CÓDIGO ES IDÉNTICO AL ANTERIOR.
+// El cambio de alimentación del joystick a 3.3V es una mejora de HARDWARE que no requiere cambios en el SOFTWARE.
+// Recuerda usar un circuito con TRANSISTOR para el motor y el buzzer (si es de 5V).
+
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "freertos/semphr.h" // NUEVO: para notificaciones
+#include "freertos/semphr.h"
 #include "driver/gpio.h"
 #include "driver/adc.h"
 #include "i2c_teg.h" 
@@ -12,28 +17,42 @@
 #include "esp_now.h"
 #include "esp_log.h"
 
-// --- Pines ---
-#define BOTON_AVANZAR    GPIO_NUM_32
-#define BOTON_RETROCEDER GPIO_NUM_33
-#define BOTON_IZQUIERDA  GPIO_NUM_25
-#define BOTON_DERECHA    GPIO_NUM_26
-#define JOYSTICK_X_PIN   ADC1_CHANNEL_6
-#define JOYSTICK_Y_PIN   ADC1_CHANNEL_7
+// ==========================================================
+// --- MAPEO DE PINES FINAL PARA EL DISEÑO DE LA PCB ---
+// ==========================================================
+// -- Lado Izquierdo de la Placa --
+#define JOYSTICK_X_PIN   ADC1_CHANNEL_4 // Corresponde a GPIO32
+#define JOYSTICK_Y_PIN   ADC1_CHANNEL_5 // Corresponde a GPIO33
 #define JOYSTICK_SW_PIN  GPIO_NUM_27
+
+#define LED_R_PIN        GPIO_NUM_12
+#define LED_G_PIN        GPIO_NUM_14
+#define LED_B_PIN        GPIO_NUM_13
+
+// -- Lado Derecho de la Placa --
+#define BOTON_AVANZAR    GPIO_NUM_17
+#define BOTON_RETROCEDER GPIO_NUM_16
+#define BOTON_IZQUIERDA  GPIO_NUM_4
+#define BOTON_DERECHA    GPIO_NUM_5
+
 #define MOTOR_PIN        GPIO_NUM_18
 #define BUZZER_PIN       GPIO_NUM_19
+// ==========================================================
+
 #define MOTOR_DURATION_MS   500
 #define BUZZER_DURATION_MS  300
 
 // --- MAC del Puente ---
 static uint8_t mac_puente_receptor[] = {0x8C, 0x4F, 0x00, 0xAB, 0x9B, 0x60};
 
-// --- NUEVO: Estados del Juego ---
-typedef enum {
-    RUNNING,
-    CRASHED
-} GameState;
+// --- Estados del Juego ---
+typedef enum { RUNNING, CRASHED } GameState;
+
+// --- Variables Globales ---
 GameState current_state = RUNNING;
+bool is_connected_feedback_done = false;
+TaskHandle_t feedback_task_handle = NULL;
+i2c_master_dev_handle_t mpu6050_dev_handle = NULL;
 
 // --- Estructura de datos de Sensores ---
 typedef struct {
@@ -42,17 +61,13 @@ typedef struct {
     mpu6050_data_t mpu_data;
 } SensorData;
 
-// --- NUEVO: Handle para la tarea de feedback ---
-TaskHandle_t feedback_task_handle = NULL;
-
 // --- Prototipos ---
 static void espnow_recv_cb(const uint8_t *mac_addr, const uint8_t *data, int len);
 void configurar_gpios();
 void configurar_joystick_adc();
 void configurar_mpu6050(); 
-i2c_master_dev_handle_t mpu6050_dev_handle = NULL;
 void sensor_task(void *pvParameters);
-void feedback_task(void *pvParameters); // NUEVO
+void feedback_task(void *pvParameters);
 
 void app_main(void) {
     nvs_flash_init();
@@ -64,7 +79,6 @@ void app_main(void) {
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     ESP_ERROR_CHECK(esp_wifi_start());
     ESP_ERROR_CHECK(esp_now_init());
-
     ESP_ERROR_CHECK(esp_now_register_recv_cb(espnow_recv_cb));
     
     esp_now_peer_info_t peer_info = {};
@@ -74,59 +88,68 @@ void app_main(void) {
     ESP_ERROR_CHECK(esp_now_add_peer(&peer_info));
     
     configurar_gpios();
+    
+    gpio_set_level(LED_R_PIN, 0);
+    gpio_set_level(LED_G_PIN, 0);
+    gpio_set_level(LED_B_PIN, 1);
+
     configurar_joystick_adc();
     configurar_mpu6050();
     
     xTaskCreate(sensor_task, "sensor_task", 4096, NULL, 10, NULL);
-    // --- NUEVO: Crear la tarea de feedback, que empieza dormida ---
     xTaskCreate(feedback_task, "feedback_task", 2048, NULL, 5, &feedback_task_handle);
     
     ESP_LOGI("CONTROLADOR", "Sistema robusto iniciado.");
 }
 
-// --- NUEVO: Callback de recepción NO BLOQUEANTE ---
 static void espnow_recv_cb(const uint8_t *mac_addr, const uint8_t *data, int len) {
     if (len > 0) {
         if (data[0] == 'C' && current_state == RUNNING) {
-            ESP_LOGI("CONTROLADOR", "Comando CRASH recibido. Notificando a la tarea de feedback.");
             current_state = CRASHED;
-            // Notifica a la tarea de feedback para que se despierte y actúe.
-            // La '1' limpia la cuenta de notificaciones a 1.
-            // pdTRUE indica que no hay que esperar si la cola está llena.
             xTaskNotifyGive(feedback_task_handle);
         } else if (data[0] == 'R') {
-            ESP_LOGI("CONTROLADOR", "Comando RESTART recibido.");
             current_state = RUNNING;
+            is_connected_feedback_done = false;
         }
     }
 }
 
-// --- NUEVO: Tarea dedicada para el feedback ---
 void feedback_task(void *pvParameters) {
     while (1) {
-        // La tarea se queda aquí 'bloqueada' (dormida) hasta que recibe una notificación.
-        // ulTaskNotifyTake consume la notificación. pdTRUE limpia el valor a cero.
-        // portMAX_DELAY significa esperar indefinidamente.
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
-        // Una vez despierta, ejecuta la secuencia de feedback.
-        ESP_LOGI("FEEDBACK", "Activando motor y buzzer...");
-        gpio_set_level(MOTOR_PIN, 1);
-        gpio_set_level(BUZZER_PIN, 1);
-        
-        vTaskDelay(BUZZER_DURATION_MS / portTICK_PERIOD_MS);
-        gpio_set_level(BUZZER_PIN, 0); // Apagar primero el buzzer
+        if(current_state == CRASHED) {
+            gpio_set_level(LED_G_PIN, 0);
+            gpio_set_level(LED_B_PIN, 0);
 
-        vTaskDelay((MOTOR_DURATION_MS - BUZZER_DURATION_MS) / portTICK_PERIOD_MS);
-        gpio_set_level(MOTOR_PIN, 0); // Apagar el motor
+            gpio_set_level(MOTOR_PIN, 1);
+            gpio_set_level(BUZZER_PIN, 1);
+            
+            for(int i = 0; i < 5; i++) {
+                gpio_set_level(LED_R_PIN, 1);
+                vTaskDelay((MOTOR_DURATION_MS / 10) / portTICK_PERIOD_MS);
+                gpio_set_level(LED_R_PIN, 0);
+                vTaskDelay((MOTOR_DURATION_MS / 10) / portTICK_PERIOD_MS);
+            }
+    
+            gpio_set_level(BUZZER_PIN, 0);
+            gpio_set_level(MOTOR_PIN, 0);
+            gpio_set_level(LED_R_PIN, 1);
+        }
     }
 }
 
-
-// La tarea de sensores se mantiene igual, enviando datos continuamente.
 void sensor_task(void *pvParameters) {
     SensorData current_data;
+
     while (1) {
+        if (!is_connected_feedback_done && current_state == RUNNING) {
+             gpio_set_level(LED_B_PIN, 0);
+             gpio_set_level(LED_G_PIN, 1);
+             gpio_set_level(LED_R_PIN, 0);
+             is_connected_feedback_done = true;
+        }
+
         current_data.btn_avanzar = !gpio_get_level(BOTON_AVANZAR);
         current_data.btn_retroceder = !gpio_get_level(BOTON_RETROCEDER);
         current_data.btn_izquierda = !gpio_get_level(BOTON_IZQUIERDA);
@@ -136,29 +159,36 @@ void sensor_task(void *pvParameters) {
         current_data.joy_y = adc1_get_raw(JOYSTICK_Y_PIN);
         mpu6050_read_accel_gyro(mpu6050_dev_handle, &current_data.mpu_data);
         
-        esp_now_send(mac_puente_receptor, (uint8_t *)&current_data, sizeof(current_data));
+        if (current_state == RUNNING) {
+            esp_now_send(mac_puente_receptor, (uint8_t *)&current_data, sizeof(current_data));
+        }
         
         vTaskDelay(50 / portTICK_PERIOD_MS); 
     }
 }
 
-// El resto de funciones de configuración se mantienen sin cambios
 void configurar_gpios() {
     gpio_config_t io_conf_in = {
         .pin_bit_mask = (1ULL << BOTON_AVANZAR) | (1ULL << BOTON_RETROCEDER) |
                          (1ULL << BOTON_IZQUIERDA) | (1ULL << BOTON_DERECHA) |
                          (1ULL << JOYSTICK_SW_PIN),
-        .mode = GPIO_MODE_INPUT, .pull_up_en = GPIO_PULLUP_ENABLE
+        .mode = GPIO_MODE_INPUT, 
+        .pull_up_en = GPIO_PULLUP_ENABLE
     };
     gpio_config(&io_conf_in);
 
     gpio_config_t io_conf_out = {
-        .pin_bit_mask = (1ULL << MOTOR_PIN) | (1ULL << BUZZER_PIN),
+        .pin_bit_mask = (1ULL << MOTOR_PIN) | (1ULL << BUZZER_PIN) | 
+                        (1ULL << LED_R_PIN) | (1ULL << LED_G_PIN) | (1ULL << LED_B_PIN),
         .mode = GPIO_MODE_OUTPUT
     };
     gpio_config(&io_conf_out);
+    
     gpio_set_level(MOTOR_PIN, 0);
     gpio_set_level(BUZZER_PIN, 0);
+    gpio_set_level(LED_R_PIN, 0);
+    gpio_set_level(LED_G_PIN, 0);
+    gpio_set_level(LED_B_PIN, 0);
 }
 
 void configurar_joystick_adc() {

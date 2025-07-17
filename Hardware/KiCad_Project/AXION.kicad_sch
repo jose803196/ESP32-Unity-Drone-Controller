@@ -3214,6 +3214,12 @@
 		(color 0 0 0 0)
 		(uuid "b3d6a217-b819-4949-90f3-718c3b529a33")
 	)
+	(junction
+		(at 177.8 90.17)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "c0620f9e-f30c-4b72-be20-9f2173be2490")
+	)
 	(wire
 		(pts
 			(xy 124.46 123.19) (xy 124.46 135.89)
@@ -3266,6 +3272,16 @@
 	)
 	(wire
 		(pts
+			(xy 177.8 90.17) (xy 170.18 90.17)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "0c8c7720-9397-49ad-be87-5b56d7653ab8")
+	)
+	(wire
+		(pts
 			(xy 195.58 101.6) (xy 195.58 105.41)
 		)
 		(stroke
@@ -3296,13 +3312,13 @@
 	)
 	(wire
 		(pts
-			(xy 115.57 92.71) (xy 120.65 92.71)
+			(xy 170.18 90.17) (xy 170.18 95.25)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "1c251178-5702-4d8b-99cc-0d1408d1376f")
+		(uuid "1f4a89bd-0eda-46f0-b944-101e0fff4a4a")
 	)
 	(wire
 		(pts
@@ -3383,16 +3399,6 @@
 			(type default)
 		)
 		(uuid "3c3db70b-7199-47f9-bb5d-c69e899a2a6a")
-	)
-	(wire
-		(pts
-			(xy 161.29 92.71) (xy 161.29 95.25)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "3c8abfe5-1a07-4859-b020-73005b1690e2")
 	)
 	(wire
 		(pts
@@ -3546,16 +3552,6 @@
 	)
 	(wire
 		(pts
-			(xy 147.32 87.63) (xy 161.29 87.63)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "7a42e52d-9a01-44d6-9d4b-a6865e5c43cf")
-	)
-	(wire
-		(pts
 			(xy 115.57 118.11) (xy 118.11 118.11)
 		)
 		(stroke
@@ -3566,16 +3562,6 @@
 	)
 	(wire
 		(pts
-			(xy 120.65 92.71) (xy 120.65 77.47)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "7f79e314-4721-4d89-9927-58141219c9a1")
-	)
-	(wire
-		(pts
 			(xy 119.38 113.03) (xy 115.57 113.03)
 		)
 		(stroke
@@ -3583,16 +3569,6 @@
 			(type default)
 		)
 		(uuid "80946388-c274-412a-9f65-84da71cf86d0")
-	)
-	(wire
-		(pts
-			(xy 147.32 77.47) (xy 147.32 87.63)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "825146c6-1bb1-4a83-ae4b-38b1e2547096")
 	)
 	(wire
 		(pts
@@ -3613,6 +3589,16 @@
 			(type default)
 		)
 		(uuid "90b641f9-d35d-45eb-ae28-317d849625c5")
+	)
+	(wire
+		(pts
+			(xy 170.18 100.33) (xy 170.18 105.41)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "91b18e97-6ecb-4356-bbdf-87cd81acd4eb")
 	)
 	(wire
 		(pts
@@ -3786,6 +3772,16 @@
 	)
 	(wire
 		(pts
+			(xy 170.18 105.41) (xy 177.8 105.41)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "daa051b0-4762-44cc-8f5a-e53781790274")
+	)
+	(wire
+		(pts
 			(xy 115.57 80.01) (xy 132.08 80.01)
 		)
 		(stroke
@@ -3833,16 +3829,6 @@
 			(type default)
 		)
 		(uuid "f9946899-79da-4a95-b326-20258fefc7be")
-	)
-	(wire
-		(pts
-			(xy 120.65 77.47) (xy 147.32 77.47)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "fc25149d-d7e8-4431-9724-d5b7ed2f73e8")
 	)
 	(wire
 		(pts
@@ -3975,72 +3961,6 @@
 					(italic yes)
 				)
 				(justify left)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:Earth")
-		(at 161.29 95.25 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "083be5e4-cf44-47fe-bbb6-3104625cd5c7")
-		(property "Reference" "#PWR05"
-			(at 161.29 101.6 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "Earth"
-			(at 161.29 100.33 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 161.29 95.25 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 161.29 95.25 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"Earth\""
-			(at 161.29 95.25 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "c1fe4b04-2757-45d8-8139-97d82562e3fb")
-		)
-		(instances
-			(project ""
-				(path "/7b73976c-1442-4f61-8ac8-e109a2c89a2d"
-					(reference "#PWR05")
-					(unit 1)
-				)
 			)
 		)
 	)
@@ -5233,16 +5153,16 @@
 	)
 	(symbol
 		(lib_id "Device:Buzzer")
-		(at 163.83 90.17 0)
+		(at 167.64 97.79 0)
+		(mirror y)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "f1929f87-94db-4925-bfed-000716fa98b2")
 		(property "Reference" "BZ1"
-			(at 167.64 88.8999 0)
+			(at 163.576 97.79 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5251,7 +5171,7 @@
 			)
 		)
 		(property "Value" "Buzzer"
-			(at 167.64 91.4399 0)
+			(at 163.83 99.0599 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5260,7 +5180,7 @@
 			)
 		)
 		(property "Footprint" "Buzzer_Beeper:Buzzer_15x7.5RM7.6"
-			(at 163.195 87.63 90)
+			(at 168.275 95.25 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5269,7 +5189,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 163.195 87.63 90)
+			(at 168.275 95.25 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5278,7 +5198,7 @@
 			)
 		)
 		(property "Description" "Buzzer, polarized"
-			(at 163.83 90.17 0)
+			(at 167.64 97.79 0)
 			(effects
 				(font
 					(size 1.27 1.27)
