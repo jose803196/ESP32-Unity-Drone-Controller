@@ -1,7 +1,7 @@
-// ESTE CÓDIGO ES IDÉNTICO AL ANTERIOR.
-// El cambio de alimentación del joystick a 3.3V es una mejora de HARDWARE que no requiere cambios en el SOFTWARE.
-// Recuerda usar un circuito con TRANSISTOR para el motor y el buzzer (si es de 5V).
-
+// =================================================================================
+// CÓDIGO COMPLETO Y FINAL USANDO LOS PINES 12, 13 Y 14 PARA LOS LEDS
+// RECUERDA: ES NECESARIO AÑADIR UNA RESISTENCIA DE PULL-DOWN DE 10kΩ EN GPIO 12.
+// =================================================================================
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
@@ -17,51 +17,38 @@
 #include "esp_now.h"
 #include "esp_log.h"
 
-// ==========================================================
-// --- MAPEO DE PINES FINAL PARA EL DISEÑO DE LA PCB ---
-// ==========================================================
-// -- Lado Izquierdo de la Placa --
-#define JOYSTICK_X_PIN   ADC1_CHANNEL_4 // Corresponde a GPIO32
-#define JOYSTICK_Y_PIN   ADC1_CHANNEL_5 // Corresponde a GPIO33
+// --- MAPEO DE PINES AJUSTADO A TU HARDWARE (12, 13, 14) ---
+#define LED_G_PIN        GPIO_NUM_12    // Verde (RUNNING) en GPIO 12 (Necesita pull-down de 10k)
+#define LED_B_PIN        GPIO_NUM_13    // Azul (INICIO) en GPIO 13 (Pin seguro)
+#define LED_R_PIN        GPIO_NUM_14    // Rojo (CRASH) en GPIO 14 (Pin seguro)
+
+// Resto de pines (Mapeo "Seguro" anterior)
+#define JOYSTICK_X_PIN   ADC1_CHANNEL_4 // GPIO32
+#define JOYSTICK_Y_PIN   ADC1_CHANNEL_5 // GPIO33
 #define JOYSTICK_SW_PIN  GPIO_NUM_27
-
-#define LED_R_PIN        GPIO_NUM_12
-#define LED_G_PIN        GPIO_NUM_14
-#define LED_B_PIN        GPIO_NUM_13
-
-// -- Lado Derecho de la Placa --
+#define BOTON_IZQUIERDA  GPIO_NUM_25
+#define BOTON_DERECHA    GPIO_NUM_26
 #define BOTON_AVANZAR    GPIO_NUM_17
 #define BOTON_RETROCEDER GPIO_NUM_16
-#define BOTON_IZQUIERDA  GPIO_NUM_4
-#define BOTON_DERECHA    GPIO_NUM_5
-
 #define MOTOR_PIN        GPIO_NUM_18
 #define BUZZER_PIN       GPIO_NUM_19
-// ==========================================================
+// =========================================================
 
 #define MOTOR_DURATION_MS   500
 #define BUZZER_DURATION_MS  300
 
-// --- MAC del Puente ---
 static uint8_t mac_puente_receptor[] = {0x8C, 0x4F, 0x00, 0xAB, 0x9B, 0x60};
-
-// --- Estados del Juego ---
 typedef enum { RUNNING, CRASHED } GameState;
-
-// --- Variables Globales ---
 GameState current_state = RUNNING;
-bool is_connected_feedback_done = false;
 TaskHandle_t feedback_task_handle = NULL;
 i2c_master_dev_handle_t mpu6050_dev_handle = NULL;
 
-// --- Estructura de datos de Sensores ---
 typedef struct {
     int btn_avanzar, btn_retroceder, btn_izquierda, btn_derecha, btn_joystick;
     int joy_x, joy_y;
     mpu6050_data_t mpu_data;
 } SensorData;
 
-// --- Prototipos ---
 static void espnow_recv_cb(const uint8_t *mac_addr, const uint8_t *data, int len);
 void configurar_gpios();
 void configurar_joystick_adc();
@@ -89,8 +76,7 @@ void app_main(void) {
     
     configurar_gpios();
     
-    gpio_set_level(LED_R_PIN, 0);
-    gpio_set_level(LED_G_PIN, 0);
+    // Estado inicial "Buscando": Azul encendido
     gpio_set_level(LED_B_PIN, 1);
 
     configurar_joystick_adc();
@@ -102,52 +88,15 @@ void app_main(void) {
     ESP_LOGI("CONTROLADOR", "Sistema robusto iniciado.");
 }
 
-static void espnow_recv_cb(const uint8_t *mac_addr, const uint8_t *data, int len) {
-    if (len > 0) {
-        if (data[0] == 'C' && current_state == RUNNING) {
-            current_state = CRASHED;
-            xTaskNotifyGive(feedback_task_handle);
-        } else if (data[0] == 'R') {
-            current_state = RUNNING;
-            is_connected_feedback_done = false;
-        }
-    }
-}
-
-void feedback_task(void *pvParameters) {
-    while (1) {
-        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-
-        if(current_state == CRASHED) {
-            gpio_set_level(LED_G_PIN, 0);
-            gpio_set_level(LED_B_PIN, 0);
-
-            gpio_set_level(MOTOR_PIN, 1);
-            gpio_set_level(BUZZER_PIN, 1);
-            
-            for(int i = 0; i < 5; i++) {
-                gpio_set_level(LED_R_PIN, 1);
-                vTaskDelay((MOTOR_DURATION_MS / 10) / portTICK_PERIOD_MS);
-                gpio_set_level(LED_R_PIN, 0);
-                vTaskDelay((MOTOR_DURATION_MS / 10) / portTICK_PERIOD_MS);
-            }
-    
-            gpio_set_level(BUZZER_PIN, 0);
-            gpio_set_level(MOTOR_PIN, 0);
-            gpio_set_level(LED_R_PIN, 1);
-        }
-    }
-}
-
 void sensor_task(void *pvParameters) {
     SensorData current_data;
 
     while (1) {
-        if (!is_connected_feedback_done && current_state == RUNNING) {
-             gpio_set_level(LED_B_PIN, 0);
-             gpio_set_level(LED_G_PIN, 1);
-             gpio_set_level(LED_R_PIN, 0);
-             is_connected_feedback_done = true;
+        // En cada ciclo, esta tarea refuerza el estado del LED
+        if (current_state == RUNNING) {
+            gpio_set_level(LED_B_PIN, 0);
+            gpio_set_level(LED_R_PIN, 0);
+            gpio_set_level(LED_G_PIN, 1);
         }
 
         current_data.btn_avanzar = !gpio_get_level(BOTON_AVANZAR);
@@ -163,7 +112,44 @@ void sensor_task(void *pvParameters) {
             esp_now_send(mac_puente_receptor, (uint8_t *)&current_data, sizeof(current_data));
         }
         
-        vTaskDelay(50 / portTICK_PERIOD_MS); 
+        vTaskDelay(20 / portTICK_PERIOD_MS); 
+    }
+}
+
+static void espnow_recv_cb(const uint8_t *mac_addr, const uint8_t *data, int len) {
+    if (len > 0) {
+        if (data[0] == 'C' && current_state == RUNNING) {
+            current_state = CRASHED;
+            xTaskNotifyGive(feedback_task_handle);
+        } else if (data[0] == 'R') {
+            current_state = RUNNING;
+        }
+    }
+}
+
+void feedback_task(void *pvParameters) {
+    while (1) {
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        
+        if(current_state == CRASHED) {
+            gpio_set_level(LED_G_PIN, 0);
+            gpio_set_level(LED_B_PIN, 0);
+            
+            gpio_set_level(MOTOR_PIN, 1);
+            gpio_set_level(BUZZER_PIN, 1);
+            
+            for(int i = 0; i < 5; i++) {
+                gpio_set_level(LED_R_PIN, 1);
+                vTaskDelay((MOTOR_DURATION_MS / 10) / portTICK_PERIOD_MS);
+                gpio_set_level(LED_R_PIN, 0);
+                vTaskDelay((MOTOR_DURATION_MS / 10) / portTICK_PERIOD_MS);
+            }
+            
+            gpio_set_level(BUZZER_PIN, 0);
+            gpio_set_level(MOTOR_PIN, 0);
+            
+            gpio_set_level(LED_R_PIN, 1);
+        }
     }
 }
 
@@ -176,7 +162,7 @@ void configurar_gpios() {
         .pull_up_en = GPIO_PULLUP_ENABLE
     };
     gpio_config(&io_conf_in);
-
+    
     gpio_config_t io_conf_out = {
         .pin_bit_mask = (1ULL << MOTOR_PIN) | (1ULL << BUZZER_PIN) | 
                         (1ULL << LED_R_PIN) | (1ULL << LED_G_PIN) | (1ULL << LED_B_PIN),
