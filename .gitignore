@@ -1,8 +1,17 @@
-# ##############################################################################
-# ## .gitignore para Proyecto Integrado (Unity, ESP-IDF, LaTeX, Hardware)    ##
-# ##############################################################################
+################################################################################
+## .gitignore Óptimo para Proyecto Integrado (Unity, ESP-IDF, KiCad)         ##
+################################################################################
 
-# === Reglas Generales =======================================================
+# === ARCHIVOS DE CONFIGURACIÓN DE EDITORES E IDEs =============================
+# Ignora configuraciones personales y caché de VS Code, Visual Studio, etc.
+.vscode/
+.vs/
+.idea/
+*.sln
+*.csproj
+
+
+# === SISTEMA OPERATIVO Y ARCHIVOS TEMPORALES ==================================
 # Ignorar archivos temporales comunes y de caché de los sistemas operativos
 .DS_Store
 .DS_Store?
@@ -14,56 +23,55 @@ Thumbs.db
 desktop.ini
 
 
-# === Unity ==================================================================
+# === UNITY ====================================================================
 # Estas carpetas son generadas localmente por Unity y pueden ser enormes.
-# Contienen datos de caché, configuraciones locales y compilaciones.
 # NUNCA deben estar en el repositorio.
-/[Ll]ibrary/
-/[Tt]emp/
-/[Oo]bj/
-/[Pp]ackage[Cc]ache/
-/[Bb]uild/
-/[Bb]uilds/
-/[Ll]ogs/
-/[Mm]emoryCaptures/
-/[Uu]ser[Ss]ettings/
-
-# Archivos de solución y proyecto autogenerados por IDEs (Visual Studio, Rider, etc.)
-# Se generan a partir del proyecto de Unity, así que no es necesario versionarlos.
-ExportedObj/
-.vscode/
-*.csproj
-*.unityproj
-*.sln
-*.suo
-*.tmp
-*.user
-*.userprefs
-*.pidb
-*.booproj
-*.svd
-*.pdb
-*.mdb
-*.opendb
-*.VC.db
+/[Uu]nity_[Pp]roject/[Ll]ibrary/
+/[Uu]nity_[Pp]roject/[Tt]emp/
+/[Uu]nity_[Pp]roject/[Oo]bj/
+/[Uu]nity_[Pp]roject/[Bb]uild/
+/[Uu]nity_[Pp]roject/[Bb]uilds/
+/[Uu]nity_[Pp]roject/[Ll]ogs/
+/[Uu]nity_[Pp]roject/[Mm]emoryCaptures/
+/[Uu]nity_[Pp]roject/UserSettings/
 
 
-# === ESP-IDF (Firmware) =====================================================
-# La carpeta 'build' contiene todos los objetos compilados y el firmware final.
-# Se genera cada vez que compilas, así que no debe ser versionada.
-/Firmware_ESP32/build/
-
-# Archivos de configuración antiguos o generados. El 'sdkconfig' principal sí
-# se versiona, pero estos no son necesarios.
-/Firmware_ESP32/sdkconfig.old
-/Firmware_ESP32/sdkconfig.h
-/Firmware_ESP32/.pio
+# === ESP-IDF (Firmware) =======================================================
+# Estas reglas se aplicarán a AMBOS proyectos de firmware.
+**/build/
+**/.pio/
+**/sdkconfig.old
+**/sdkconfig.h
 
 
-# === LaTeX (Documentación) ==================================================
-# LaTeX genera una gran cantidad de archivos auxiliares durante la compilación.
-# Solo necesitas versionar los archivos fuente (.tex) y las imágenes.
-# El PDF final es opcional, pero se recomienda incluirlo en una carpeta aparte.
+# === KICAD (Hardware) =========================================================
+# Ignorar backups, configuraciones locales y salidas de fabricación.
+# ¡NO ignorar los archivos de huellas (.kicad_mod) ni las librerías (.pretty)!
+
+# Archivos de respaldo y caché
+*-backups/
+*.bak
+*-cache.lib
+*.kicad_prl
+_autosave-*
+fp-lib-cache
+
+# Archivos de configuración de proyecto/sesión
+*.kicad_pro
+
+# Tabla de librerías de huellas (es local a cada ordenador)
+fp-lib-table
+
+# Salidas de fabricación (Gerbers, PDFs de ploteo, etc.)
+gerbers/
+plots/
+*.gbr
+*.drl
+*.gbrjob
+
+
+# === LaTeX (Documentación) ====================================================
+# Archivos auxiliares generados durante la compilación.
 *.aux
 *.acn
 *.acr
@@ -89,37 +97,13 @@ ExportedObj/
 _minted*
 *.xdv
 
-# No ignorar la carpeta PDF_Exports aunque esté vacía al principio
-!/4_Documentation/PDF_Exports/.gitkeep
 
+# === Blender & Archivos Comprimidos ===========================================
+# Backups de Blender
+*.blend1
+*.blend2
 
-# === Herramientas de Diseño Hardware (KiCad, Eagle, etc.) ===================
-# Archivos de respaldo y caché generados por herramientas de diseño de PCB/esquemas.
-# KiCad
-*-backups/
-*.bak
-*-cache.lib
-*.kicad_prl
-*.kicad_pro
-_autosave-*
-
-# Eagle
-*.b#?
-*.s#?
-*.l#?
-*.dru
-*.swn
-*.swo
-
-# === Archivos de Compresión ===============================================
-# A menudo se usan para backups temporales
+# Backups temporales en formato comprimido
 *.zip
 *.rar
 *.7z
-
-
-# === Blender ================================================================
-# Blender crea archivos de guardado automático. No los necesitamos en el repo.
-*.blend1
-*.blend2
-*.blend@
