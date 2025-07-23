@@ -2,40 +2,31 @@ using UnityEngine;
 using System.IO.Ports;
 using System;
 
-public class SerialReader : MonoBehaviour
-{
+public class SerialReader : MonoBehaviour{
     private SerialPort serial;
     private string portName = "COM3"; // Ajusta según tu puerto
     private int baudRate = 115200;
 
-    void Start()
-    {
-        try
-        {
+    void Start(){
+        try{
             serial = new SerialPort(portName, baudRate);
             serial.ReadTimeout = 1000; // Aumentar a 1000 ms
             serial.Open();
             Debug.Log("Puerto serial abierto: " + portName);
         }
-        catch (Exception e)
-        {
+        catch (Exception e){
             Debug.LogError("Error al abrir el puerto serial: " + e.Message);
         }
     }
 
-    void Update()
-    {
-        if (serial != null && serial.IsOpen)
-        {
-            try
-            {
-                if (serial.BytesToRead > 0)
-                {
+    void Update(){
+        if (serial != null && serial.IsOpen){
+            try{
+                if (serial.BytesToRead > 0){
                     string line = serial.ReadLine();
-                    Debug.Log(line);
+                    // Debug.Log(line);
                     string[] values = line.Split(',');
-                    if (values.Length == 13)
-                    {
+                    if (values.Length == 13){
                         int btn_avanzar = int.Parse(values[0]);
                         int joy_x = int.Parse(values[5]);
                         float ax = float.Parse(values[7]);
@@ -50,10 +41,8 @@ public class SerialReader : MonoBehaviour
         }
     }
 
-    void OnDestroy()
-    {
-        if (serial != null && serial.IsOpen)
-        {
+    void OnDestroy(){
+        if (serial != null && serial.IsOpen){
             serial.Close();
             Debug.Log("Puerto serial cerrado");
         }
