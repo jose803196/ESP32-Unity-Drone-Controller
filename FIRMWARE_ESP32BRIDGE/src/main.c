@@ -16,7 +16,7 @@ typedef struct {
     mpu6050_data_t mpu_data;
 } SensorData;
 
-#define UART_PC_PORT UART_NUM_0 // Puedes cambiar a UART_NUM_1 si usas GPIO17/16
+#define UART_PC_PORT UART_NUM_0
 #define UART_BUF_SIZE 1024
 
 // --- MAC del ESP32 Controlador ---
@@ -102,11 +102,11 @@ void uart_task(void *pvParameters) {
         if (len > 0) {
             if (data[0] == 'C') {
                 ESP_LOGI("PUENTE", "Comando 'C' recibido. Pausando envío al controlador...");
-                sendingEnabled = false; // Desactivar el envío de datos al controlador
+                esp_now_send(mac_controlador_emisor, data, 1);
             }
             else if (data[0] == 'R') {
                 ESP_LOGI("PUENTE", "Comando 'R' recibido. Reanudando envío al controlador...");
-                sendingEnabled = true; // Reactivar el envío de datos al controlador
+                esp_now_send(mac_controlador_emisor, data, 1);
             }
         }
     }
