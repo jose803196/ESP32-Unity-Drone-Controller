@@ -112,7 +112,7 @@ void sensor_task(void *pvParameters) {
             esp_now_send(mac_puente_receptor, (uint8_t *)&current_data, sizeof(current_data));
         }
         
-        vTaskDelay(20 / portTICK_PERIOD_MS); 
+        vTaskDelay(1000 / portTICK_PERIOD_MS); 
     }
 }
 
