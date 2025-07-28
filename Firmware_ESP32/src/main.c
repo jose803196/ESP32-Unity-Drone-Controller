@@ -18,9 +18,9 @@
 #include "esp_log.h"
 
 // --- MAPEO DE PINES AJUSTADO A TU HARDWARE (12, 13, 14) ---
-#define LED_G_PIN        GPIO_NUM_12    // Verde (RUNNING) en GPIO 12 (Necesita pull-down de 10k)
-#define LED_B_PIN        GPIO_NUM_13    // Azul (INICIO) en GPIO 13 (Pin seguro)
-#define LED_R_PIN        GPIO_NUM_14    // Rojo (CRASH) en GPIO 14 (Pin seguro)
+#define LED_G_PIN        GPIO_NUM_12    // Verde (RUNNING) en GPIO 12.
+#define LED_R_PIN        GPIO_NUM_13    // Rojo (INICIO) en GPIO 13 (Pin seguro)
+#define LED_B_PIN        GPIO_NUM_14    // Azul (CRASH) en GPIO 14 (Pin seguro)
 
 // Resto de pines (Mapeo "Seguro" anterior)
 #define JOYSTICK_X_PIN   ADC1_CHANNEL_4 // GPIO32
@@ -77,7 +77,7 @@ void app_main(void) {
     configurar_gpios();
     
     // Estado inicial "Buscando": Azul encendido
-    gpio_set_level(LED_B_PIN, 1);
+    //gpio_set_level(LED_R_PIN, 1);
 
     configurar_joystick_adc();
     configurar_mpu6050();
@@ -94,9 +94,9 @@ void sensor_task(void *pvParameters) {
     while (1) {
         // En cada ciclo, esta tarea refuerza el estado del LED
         if (current_state == RUNNING) {
-            gpio_set_level(LED_B_PIN, 0);
             gpio_set_level(LED_R_PIN, 0);
-            gpio_set_level(LED_G_PIN, 1);
+            gpio_set_level(LED_B_PIN, 0);
+            gpio_set_level(LED_G_PIN, 0);
         }
 
         current_data.btn_avanzar = !gpio_get_level(BOTON_AVANZAR);
@@ -112,7 +112,7 @@ void sensor_task(void *pvParameters) {
             esp_now_send(mac_puente_receptor, (uint8_t *)&current_data, sizeof(current_data));
         }
         
-        vTaskDelay(1000 / portTICK_PERIOD_MS); 
+        vTaskDelay(20 / portTICK_PERIOD_MS); 
     }
 }
 
@@ -132,23 +132,22 @@ void feedback_task(void *pvParameters) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         
         if(current_state == CRASHED) {
-            gpio_set_level(LED_G_PIN, 0);
             gpio_set_level(LED_B_PIN, 0);
             
             gpio_set_level(MOTOR_PIN, 1);
             gpio_set_level(BUZZER_PIN, 1);
             
             for(int i = 0; i < 5; i++) {
-                gpio_set_level(LED_R_PIN, 1);
+                gpio_set_level(LED_B_PIN, 1);
                 vTaskDelay((MOTOR_DURATION_MS / 10) / portTICK_PERIOD_MS);
-                gpio_set_level(LED_R_PIN, 0);
+                gpio_set_level(LED_B_PIN, 0);
                 vTaskDelay((MOTOR_DURATION_MS / 10) / portTICK_PERIOD_MS);
             }
             
             gpio_set_level(BUZZER_PIN, 0);
             gpio_set_level(MOTOR_PIN, 0);
             
-            gpio_set_level(LED_R_PIN, 1);
+            gpio_set_level(LED_B_PIN, 1);
         }
     }
 }
@@ -165,16 +164,16 @@ void configurar_gpios() {
     
     gpio_config_t io_conf_out = {
         .pin_bit_mask = (1ULL << MOTOR_PIN) | (1ULL << BUZZER_PIN) | 
-                        (1ULL << LED_R_PIN) | (1ULL << LED_G_PIN) | (1ULL << LED_B_PIN),
+                        (1ULL << LED_B_PIN) | (1ULL << LED_G_PIN) | (1ULL << LED_R_PIN),
         .mode = GPIO_MODE_OUTPUT
     };
     gpio_config(&io_conf_out);
     
     gpio_set_level(MOTOR_PIN, 0);
     gpio_set_level(BUZZER_PIN, 0);
-    gpio_set_level(LED_R_PIN, 0);
-    gpio_set_level(LED_G_PIN, 0);
     gpio_set_level(LED_B_PIN, 0);
+    gpio_set_level(LED_G_PIN, 0);
+    gpio_set_level(LED_R_PIN, 0);
 }
 
 void configurar_joystick_adc() {
