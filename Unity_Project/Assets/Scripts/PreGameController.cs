@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
-using TMPro; // ¡MUY IMPORTANTE! Añadir este para TextMeshPro
+using TMPro;
 
 public class PreGameController : MonoBehaviour{
     [Header("Configuración del Puerto Serie")]
@@ -178,6 +178,9 @@ public class PreGameController : MonoBehaviour{
         GameSettingsManager.Instance.SelectedDrone = (DroneType)selectedIndices[0];
         GameSettingsManager.Instance.SelectedScenery = (SceneryType)selectedIndices[1];
         GameSettingsManager.Instance.SelectedFlightMode = (FlightModeType)selectedIndices[2];
+        Debug.Log("Opciones guardadas: " + GameSettingsManager.Instance.SelectedDrone);
+        Debug.Log("Opciones guardadas: " + GameSettingsManager.Instance.SelectedScenery);
+        Debug.Log("Opciones guardadas: " + GameSettingsManager.Instance.SelectedFlightMode);
         SceneManager.LoadScene("GameScene");
     }
 

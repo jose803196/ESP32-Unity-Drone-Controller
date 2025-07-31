@@ -2,8 +2,8 @@ using UnityEngine;
 
 // Enums para que las opciones sean claras y a prueba de errores
 public enum DroneType { RACER, CINEMATIC }
-public enum SceneryType { REFINERY, CANYON }
-public enum FlightModeType { FREESTYLE, ARCADE }
+public enum SceneryType { REFINERY, SOLARP }
+public enum FlightModeType { FREESTYLE, PID }
 
 public class GameSettingsManager : MonoBehaviour
 {
