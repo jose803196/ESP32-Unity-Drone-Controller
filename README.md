@@ -31,7 +31,7 @@ This repository contains everything from the ground up:
 ## ✨ Features
 
 *   **Real-time Control:** Low-latency communication between the ESP32 and Unity via UART.
-*   **Intuitive Physical Interface:** Control using a joystick for movement, buttons for altitude and rotation.
+*   **Intuitive Physical Interface:** Control using a joystick for movement, buttons for altitude and lateral movement.
 *   **Realistic Physics:** The drone in Unity is powered by a `Rigidbody` component for believable movement.
 *   **Modular Codebase:** Clean and well-documented code in both C (ESP32) and C# (Unity).
 *   **Integrated 3D Workflow:** Includes `.blend` files directly within the Unity project for seamless model editing.
@@ -57,6 +57,10 @@ This project is built with a combination of hardware and software technologies:
         <li>MPU-6050 Gyro/Accel</li>
         <li>Analog Joystick</li>
         <li>Push Buttons</li>
+        <li>Buzzer</li>
+        <li>LED's RGB</li>
+        <li>Motor</li>
+        <li>BJT transistor</li>
       </ul>
     </td>
     <td>
@@ -92,7 +96,7 @@ Follow these steps to get the project up and running on your local machine.
 
 ### Prerequisites
 
-*   **Hardware:** All components listed in `1_Hardware`.
+*   **Hardware:** All components listed in `Hardware`.
 *   **Software:**
     *   Unity Hub & Unity Editor (version `202X.X.Xf1` recommended).
     *   ESP-IDF (version `vX.X` recommended).
@@ -106,13 +110,13 @@ Follow these steps to get the project up and running on your local machine.
     ```
 
 2.  **Flash the Firmware**
-    *   Navigate to the `2_Firmware_ESP32/` directory.
+    *   Navigate to the `Firmware_ESP32` directory.
     *   Connect your assembled controller to your computer.
     *   Run `idf.py flash monitor` to build, upload, and view the serial output.
 
 3.  **Run the Unity Simulation**
     *   Open Unity Hub and select "Add project from disk".
-    *   Choose the `3_Unity_Project/` folder from this repository.
+    *   Choose the `Unity_Project` folder from this repository.
     *   Once the project is open, navigate to the main scene in `Assets/_Project_DroneSim/Scenes/`.
     *   In the `DroneController` script component, set the `Port Name` to match the one used by your ESP32.
     *   Press **Play**!
