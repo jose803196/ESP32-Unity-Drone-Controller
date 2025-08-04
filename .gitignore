@@ -26,14 +26,14 @@ desktop.ini
 # === UNITY ====================================================================
 # Estas carpetas son generadas localmente por Unity y pueden ser enormes.
 # NUNCA deben estar en el repositorio.
-/[Uu]nity_[Pp]roject/[Ll]ibrary/
-/[Uu]nity_[Pp]roject/[Tt]emp/
-/[Uu]nity_[Pp]roject/[Oo]bj/
-/[Uu]nity_[Pp]roject/[Bb]uild/
-/[Uu]nity_[Pp]roject/[Bb]uilds/
-/[Uu]nity_[Pp]roject/[Ll]ogs/
-/[Uu]nity_[Pp]roject/[Mm]emoryCaptures/
-/[Uu]nity_[Pp]roject/UserSettings/
+/Library/
+/Temp/
+/Obj/
+/Build/
+/Builds/
+/Logs/
+/MemoryCaptures/
+/UserSettings/
 
 
 # === ESP-IDF (Firmware) =======================================================
