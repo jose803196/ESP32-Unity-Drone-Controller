@@ -26,14 +26,24 @@ desktop.ini
 # === UNITY ====================================================================
 # Estas carpetas son generadas localmente por Unity y pueden ser enormes.
 # NUNCA deben estar en el repositorio.
-/Library/
-/Temp/
-/Obj/
-/Build/
-/Builds/
-/Logs/
-/MemoryCaptures/
-/UserSettings/
+# Explude all files from the `Library` folder except the file containing the package information
+/Library/*
+!/Library/PackageCache/
+/Library/PackageCache/*
+!/Library/PackageCache/com.unity.ide.rider*
+!/Library/PackageCache/com.unity.ide.visualstudio*
+!/Library/Package-cache/com.unity.ide.vscode*
+!/Library/PackageCache/com.unity.test-framework*
+!/Library/PackageCache/com.unity.textmeshpro*
+/Library/com.unity.textmeshpro@*
+
+# Unity generated project files
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uild/
+/[Bb]uilds/
+/[Ll]ogs/
+/[Uu]ser[Ss]ettings/
 
 
 # === ESP-IDF (Firmware) =======================================================
