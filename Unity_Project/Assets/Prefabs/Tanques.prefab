@@ -10,27 +10,27 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 72683dc52126a8f4180ba8ba00b112d1, type: 3}
       propertyPath: m_LocalScale.x
-      value: 750
+      value: 250
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 72683dc52126a8f4180ba8ba00b112d1, type: 3}
       propertyPath: m_LocalScale.y
-      value: 750
+      value: 250
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 72683dc52126a8f4180ba8ba00b112d1, type: 3}
       propertyPath: m_LocalScale.z
-      value: 750
+      value: 250
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 72683dc52126a8f4180ba8ba00b112d1, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 250.31604
+      value: 1357.3651
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 72683dc52126a8f4180ba8ba00b112d1, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 4.36
+      value: 0.000000059604645
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 72683dc52126a8f4180ba8ba00b112d1, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 261.94
+      value: 832.47614
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 72683dc52126a8f4180ba8ba00b112d1, type: 3}
       propertyPath: m_LocalRotation.w
@@ -74,14 +74,14 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 72683dc52126a8f4180ba8ba00b112d1, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1171374654509025498}
+      addedObject: {fileID: 3281452405442561571}
   m_SourcePrefab: {fileID: 100100000, guid: 72683dc52126a8f4180ba8ba00b112d1, type: 3}
 --- !u!1 &290847728952548908 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 72683dc52126a8f4180ba8ba00b112d1, type: 3}
   m_PrefabInstance: {fileID: 632797142741623677}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1171374654509025498
+--- !u!114 &3281452405442561571
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

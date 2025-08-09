@@ -22,15 +22,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: e8a539ea8e1a32d4cac9eb0a5d35a608, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 249.85
+      value: 1356.8435
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: e8a539ea8e1a32d4cac9eb0a5d35a608, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 4.96
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: e8a539ea8e1a32d4cac9eb0a5d35a608, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 261.9
+      value: 832.77997
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: e8a539ea8e1a32d4cac9eb0a5d35a608, type: 3}
       propertyPath: m_LocalRotation.w
@@ -74,14 +74,14 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e8a539ea8e1a32d4cac9eb0a5d35a608, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 5501110382822820676}
+      addedObject: {fileID: 2924860976588117595}
   m_SourcePrefab: {fileID: 100100000, guid: e8a539ea8e1a32d4cac9eb0a5d35a608, type: 3}
 --- !u!1 &1123203708267013689 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: e8a539ea8e1a32d4cac9eb0a5d35a608, type: 3}
   m_PrefabInstance: {fileID: 240663320177482600}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &5501110382822820676
+--- !u!114 &2924860976588117595
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

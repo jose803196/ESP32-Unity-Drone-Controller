@@ -1,74 +1,96 @@
 using UnityEngine;
 
+// Es una buena práctica asegurarse de que este script siempre esté en un objeto con una Cámara.
+[RequireComponent(typeof(Camera))]
 public class OrbitalCamera : MonoBehaviour
 {
     [Header("Objetivo a Seguir")]
-    [Tooltip("El Transform del objeto que la cámara debe orbitar (tu dron).")]
     public Transform target;
 
-    [Header("Configuración de Órbita")]
-    [Tooltip("La distancia inicial de la cámara al objetivo.")]
-    public float distance = 5.0f;
-    [Tooltip("La velocidad de rotación de la cámara con el ratón.")]
-    public float rotationSpeed = 120.0f;
-    [Tooltip("La suavidad con la que la cámara se mueve a su nueva posición.")]
-    public float followSmoothness = 0.05f;
+    [Header("Configuración de Seguimiento Automático")]
+    [Tooltip("La distancia a la que la cámara se mantiene detrás del dron.")]
+    public float distance = 7.0f;
+    [Tooltip("La altura a la que la cámara se mantiene sobre el dron.")]
+    public float height = 3.0f;
+    [Tooltip("La suavidad con la que la cámara sigue la rotación del dron.")]
+    public float rotationDamping = 3.0f;
+    [Tooltip("La suavidad con la que la cámara sigue la posición del dron.")]
+    public float positionDamping = 5.0f;
 
-    [Header("Configuración de Zoom")]
-    [Tooltip("La velocidad del zoom con la rueda del ratón.")]
-    public float zoomSpeed = 4.0f;
-    [Tooltip("La distancia mínima y máxima del zoom.")]
-    public Vector2 zoomDistanceRange = new Vector2(2f, 15f);
+    [Header("Rendimiento")]
+    [Tooltip("La distancia máxima a la que la cámara renderizará objetos. Valores más bajos mejoran el rendimiento.")]
+    public float renderDistance = 250f;
 
-    [Header("Límites de Ángulo (Pitch)")]
-    [Tooltip("El ángulo mínimo y máximo en vertical (evita que la cámara pase por debajo del suelo).")]
-    public Vector2 pitchMinMax = new Vector2(-40f, 85f);
+    // El método público para asignar el objetivo sigue siendo necesario.
+    public void AssignTarget(Transform newTarget)
+    {
+        target = newTarget;
+        Debug.Log($"Cámara: Nuevo objetivo asignado -> {newTarget.name}");
+    }
 
-    // Variables privadas para el estado de la rotación
-    private float yaw = 0.0f;   // Rotación horizontal (eje Y)
-    private float pitch = 20.0f; // Rotación vertical (eje X)
-    private Vector3 currentVelocity = Vector3.zero;
+    void Start()
+    {
+        // Aplicamos la distancia de renderizado al componente Cámara.
+        Camera cam = GetComponent<Camera>();
+        if (cam != null)
+        {
+            cam.farClipPlane = renderDistance;
+        }
+        else
+        {
+            Debug.LogError("No se encontró el componente 'Camera' en este objeto.");
+        }
+    }
 
+    // Usamos LateUpdate para asegurar que la cámara se mueva DESPUÉS de que el dron se haya movido.
     void LateUpdate()
     {
-        // Si no tenemos objetivo, no hacemos nada.
+        // Si no hay objetivo, no hacemos nada.
         if (target == null)
         {
-            Debug.LogWarning("La cámara orbital no tiene un objetivo (target) asignado.");
+            // Ya no mostramos un warning cada frame para no llenar la consola.
+            // GameInitializer se encarga de asignarlo.
             return;
         }
 
-        // --- 1. LÓGICA DE ROTACIÓN (CONTROLADA POR EL RATÓN) ---
-        // Si mantienes presionado el botón derecho del ratón (o el izquierdo, si prefieres)...
-        if (Input.GetMouseButton(1)) // 0 = Izquierdo, 1 = Derecho, 2 = Central
-        {
-            // ...leemos el movimiento del ratón y lo aplicamos a nuestros ángulos.
-            yaw += Input.GetAxis("Mouse X") * rotationSpeed * Time.deltaTime;
-            pitch -= Input.GetAxis("Mouse Y") * rotationSpeed * Time.deltaTime;
+        // --- CÁLCULO DE LA POSICIÓN Y ROTACIÓN DESEADAS ---
 
-            // Limitamos el ángulo vertical para evitar que la cámara de la vuelta por completo.
-            pitch = Mathf.Clamp(pitch, pitchMinMax.x, pitchMinMax.y);
-        }
+        // 1. Ángulo deseado: Queremos que la cámara mire en la misma dirección que el dron.
+        float desiredYawAngle = target.eulerAngles.y;
 
-        // --- 2. LÓGICA DE ZOOM (RUEDA DEL RATÓN) ---
-        distance -= Input.GetAxis("Mouse ScrollWheel") * zoomSpeed;
-        distance = Mathf.Clamp(distance, zoomDistanceRange.x, zoomDistanceRange.y);
+        // 2. Altura deseada: La altura actual del dron más la altura fija que definimos.
+        float desiredHeight = target.position.y + height;
 
-        // --- 3. CÁLCULO DE LA POSICIÓN Y ROTACIÓN ---
-        // Convertimos nuestros ángulos (yaw, pitch) en una rotación real (Quaternion).
-        Quaternion rotation = Quaternion.Euler(pitch, yaw, 0);
-        // Calculamos la posición deseada de la cámara: está en la posición del objetivo,
-        // pero desplazada hacia atrás por la rotación y la distancia.
-        Vector3 desiredPosition = target.position - (rotation * Vector3.forward * distance);
+        // 3. Rotación actual de la cámara
+        float currentYawAngle = transform.eulerAngles.y;
+        float currentHeight = transform.position.y;
 
-        // --- 4. SUAVIZADO DEL MOVIMIENTO ---
-        // En lugar de teletransportar la cámara, usamos SmoothDamp para un movimiento
-        // fluido y profesional. Evita cualquier tipo de "jitter" o salto.
-        transform.position = Vector3.SmoothDamp(transform.position, desiredPosition, ref currentVelocity, followSmoothness);
+        // --- SUAVIZADO (DAMPING) ---
+        // Para que la cámara no se mueva bruscamente, suavizamos el cambio de ángulo y altura.
 
-        // 5. HACER QUE LA CÁMARA MIRE AL OBJETIVO ---
-        // Después de calcular nuestra posición final, siempre miramos de vuelta al objetivo.
-        // Esto mantiene al dron en el centro.
-        transform.LookAt(target.position);
+        // Suavizamos el ángulo de rotación horizontal (yaw).
+        currentYawAngle = Mathf.LerpAngle(currentYawAngle, desiredYawAngle, rotationDamping * Time.deltaTime);
+
+        // Suavizamos el movimiento vertical.
+        currentHeight = Mathf.Lerp(currentHeight, desiredHeight, positionDamping * Time.deltaTime);
+
+        // --- APLICACIÓN DE LA POSICIÓN FINAL ---
+
+        // Convertimos el ángulo suavizado de vuelta a una rotación.
+        Quaternion currentRotation = Quaternion.Euler(0, currentYawAngle, 0);
+
+        // Calculamos la posición de la cámara:
+        // Empezamos en la posición del dron.
+        Vector3 cameraPosition = target.position;
+        // Nos movemos hacia atrás según la rotación.
+        cameraPosition -= currentRotation * Vector3.forward * distance;
+        // Ajustamos la altura suavizada.
+        cameraPosition = new Vector3(cameraPosition.x, currentHeight, cameraPosition.z);
+
+        // Asignamos la nueva posición a la cámara.
+        transform.position = cameraPosition;
+
+        // Finalmente, nos aseguramos de que la cámara siempre mire al dron.
+        transform.LookAt(target);
     }
 }
