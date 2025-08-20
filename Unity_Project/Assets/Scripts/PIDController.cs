@@ -1,4 +1,3 @@
-// PIDController.cs - No es un MonoBehaviour, es una clase de ayuda.
 public class PIDController
 {
     private float pGain, iGain, dGain;
@@ -21,7 +20,7 @@ public class PIDController
         integral += currentError * deltaTime;
         float iTerm = iGain * integral;
 
-        // D (Derivativo): Amortigua el movimiento prediciendo el error futuro. ¡Evita las oscilaciones!
+        // D (Derivativo): Amortigua el movimiento prediciendo el error futuro.
         float derivative = (currentError - lastError) / deltaTime;
         float dTerm = dGain * derivative;
 

@@ -708,7 +708,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.3
-  far clip plane: 250
+  far clip plane: 500
   field of view: 60
   orthographic: 0
   orthographic size: 5
@@ -793,7 +793,7 @@ MonoBehaviour:
   height: 3
   rotationDamping: 3
   positionDamping: 5
-  renderDistance: 100
+  renderDistance: 400
 --- !u!1 &1293820493
 GameObject:
   m_ObjectHideFlags: 0

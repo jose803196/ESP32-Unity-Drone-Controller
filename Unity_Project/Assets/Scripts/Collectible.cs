@@ -4,27 +4,27 @@ using UnityEngine;
 
 public class Collectible : MonoBehaviour
 {
-    // Una bandera para asegurarnos de que solo se pueda recoger una vez.
-    // Evita bugs si el dron toca el coleccionable en dos frames seguidos.
+    [Header("Efectos")]
+    [Tooltip("El sonido que se reproducirá al recoger este objeto.")]
+    public AudioClip collectionSound;
+
     private bool isCollected = false;
 
     private void OnTriggerEnter(Collider other)
     {
-        // Si ya fue recogido, salimos inmediatamente.
         if (isCollected)
         {
             return;
         }
-
-        // Comprobamos si fue el dron quien lo tocó.
         if (other.CompareTag("Dron"))
         {
-            // Marcamos como recogido INMEDIATAMENTE para evitar dobles llamadas.
             isCollected = true;
 
-            // --- EL CAMBIO CLAVE ---
-            // En lugar de buscar, vamos directamente a la "marcación rápida".
-            // Es miles de veces más rápido y más limpio.
+            AudioSource playerAudioSource = other.GetComponent<AudioSource>();
+            if (playerAudioSource != null && collectionSound != null)
+            {
+                playerAudioSource.PlayOneShot(collectionSound);
+            }
             if (GameManager.Instance != null)
             {
                 GameManager.Instance.AddCollectible();
@@ -33,8 +33,6 @@ public class Collectible : MonoBehaviour
             {
                 Debug.LogError("¡Se recogió un coleccionable, pero no se encontró la instancia del GameManager!");
             }
-
-            // Destruimos el coleccionable.
             Destroy(gameObject);
         }
     }

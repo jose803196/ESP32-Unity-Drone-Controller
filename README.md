@@ -80,7 +80,6 @@ This project is built with a combination of hardware and software technologies:
     </td>
     <td>
       <ul>
-        <li>LaTeX</li>
         <li>Markdown</li>
         <li>KiCad (for Schematics/PCB)</li>
       </ul>
@@ -100,7 +99,6 @@ Follow these steps to get the project up and running on your local machine.
 *   **Software:**
     *   Unity Hub & Unity Editor (version `202X.X.Xf1` recommended).
     *   ESP-IDF (version `vX.X` recommended).
-    *   A LaTeX distribution like MiKTeX (Windows) or MacTeX (macOS) to compile the documentation.
 
 ### Installation & Setup
 
@@ -110,7 +108,7 @@ Follow these steps to get the project up and running on your local machine.
     ```
 
 2.  **Flash the Firmware**
-    *   Navigate to the `Firmware_ESP32` directory.
+    *   Navigate to the `Firmware_ESP32` and `FIRMWARE_ESP32BRIDGE` directories.
     *   Connect your assembled controller to your computer.
     *   Run `idf.py flash monitor` to build, upload, and view the serial output.
 

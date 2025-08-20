@@ -1,11 +1,10 @@
 ﻿using UnityEngine;
 using System.Globalization;
 using System.IO; // Necesario para trabajar con archivos
-using System.Text; // Necesario para el StringBuilder, que es muy eficiente
+using System.Text;
 
 public class SerialReader : MonoBehaviour
 {
-    // --- PARÁMETROS (SIN CAMBIOS) ---
     [Header("Parámetros de Vuelo")]
     public float moveSpeed = 10.0f;
     public float verticalSpeed = 10.0f;
@@ -18,17 +17,17 @@ public class SerialReader : MonoBehaviour
     public float iGain = 0f;
     public float dGain = 0.05f;
 
-    // --- NUEVO: PARÁMETROS DEL REGISTRO DE DATOS ---
+    // PARÁMETROS DEL REGISTRO DE DATOS
     [Header("Data Logging")]
     [Tooltip("Nombre de la carpeta donde se guardarán los CSV.")]
     public string logFolderName = "FlightDataLogs";
 
-    // --- VARIABLES INTERNAS ---
+    // VARIABLES INTERNAS 
     private Rigidbody rb;
     private float moveForward, moveStrafe, moveVertical, yawInput, pitchRate, rollRate;
     private PIDController pitchPid, rollPid;
 
-    // --- NUEVO: VARIABLES PARA EL REGISTRO CSV ---
+    // VARIABLES PARA EL REGISTRO CSV
     private StringBuilder csvBuilder;
     private string csvFilePath;
 
@@ -37,11 +36,10 @@ public class SerialReader : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         UpdatePIDGains();
 
-        // --- NUEVO: INICIALIZAMOS EL REGISTRO DE DATOS ---
+        // INICIALIZAMOS EL REGISTRO DE DATOS
         InitializeDataLogger();
     }
 
-    // El resto de funciones de setup no cambian
     void OnValidate() { UpdatePIDGains(); }
     void UpdatePIDGains()
     {
@@ -50,12 +48,11 @@ public class SerialReader : MonoBehaviour
     }
     private void OnEnable() { if (SerialManager.Instance != null) SerialManager.Instance.OnSerialDataReceived += HandleSerialData; }
 
-    // Al deshabilitarse, guardamos el archivo.
     private void OnDisable()
     {
         if (SerialManager.Instance != null) SerialManager.Instance.OnSerialDataReceived -= HandleSerialData;
 
-        // --- NUEVO: GUARDAMOS LOS DATOS ACUMULADOS ---
+        // GUARDAMOS LOS DATOS ACUMULADOS
         SaveLogFile();
     }
 
@@ -66,7 +63,6 @@ public class SerialReader : MonoBehaviour
         {
             moveForward = int.Parse(values[0]) - int.Parse(values[1]);
             moveStrafe = int.Parse(values[3]) - int.Parse(values[2]);
-            // Corrección: el joystick no tiene zona muerta en el original, así que lo corregimos
             moveVertical = (int.Parse(values[5]) - 1860f) / 1860f;
             yawInput = (int.Parse(values[6]) - 1920f) / 1920f;
             float gx_raw = float.Parse(values[10], CultureInfo.InvariantCulture);
@@ -80,7 +76,7 @@ public class SerialReader : MonoBehaviour
     {
         if (rb == null) return;
 
-        // --- FÍSICA Y LÓGICA DE VUELO (SIN CAMBIOS) ---
+        // FÍSICA Y LÓGICA DE VUELO
         Vector3 moveDirection = new Vector3(moveStrafe, 0, moveForward);
         rb.AddForce(transform.TransformDirection(moveDirection.normalized) * moveSpeed, ForceMode.Acceleration);
         rb.AddForce(Vector3.up * moveVertical * verticalSpeed, ForceMode.Acceleration);
@@ -102,23 +98,23 @@ public class SerialReader : MonoBehaviour
         rb.AddForce(Vector3.up * 9.81f, ForceMode.Acceleration);
         if (rb.velocity.magnitude > moveSpeed * 1.5f) { rb.velocity = rb.velocity.normalized * moveSpeed * 1.5f; }
 
-        // --- NUEVO: REGISTRAMOS LOS DATOS DE ESTE FRAME ---
+        // REGISTRAMOS LOS DATOS DE ESTE FRAME 
         RecordDataPoint();
     }
 
-    // --- NUEVAS FUNCIONES PARA EL REGISTRO DE DATOS ---
+    // FUNCIONES PARA EL REGISTRO DE DATOS
 
     private void InitializeDataLogger()
     {
-        // 1. Crear el directorio si no existe.
+        // Crear el directorio si no existe.
         string folderPath = Path.Combine(Application.dataPath, logFolderName);
         Directory.CreateDirectory(folderPath);
 
-        // 2. Crear un nombre de archivo único con la fecha y hora.
+        // Crear un nombre de archivo único con la fecha y hora.
         string fileName = $"FlightLog_{System.DateTime.Now:yyyy-MM-dd_HH-mm-ss}.csv";
         csvFilePath = Path.Combine(folderPath, fileName);
 
-        // 3. Crear el StringBuilder y escribir la cabecera del CSV.
+        // Crear el StringBuilder y escribir la cabecera del CSV.
         csvBuilder = new StringBuilder();
         string header = "timestamp," +
                         "posX,posY,posZ," +
@@ -134,8 +130,6 @@ public class SerialReader : MonoBehaviour
 
     private void RecordDataPoint()
     {
-        // Añadimos una nueva línea al StringBuilder con todos los datos del frame actual.
-        // El formato "F4" significa float con 4 decimales, es bueno para la consistencia.
         string line = string.Format(CultureInfo.InvariantCulture,
             "{0:F4},{1:F4},{2:F4},{3:F4},{4:F4},{5:F4},{6:F4},{7:F4},{8:F4},{9:F4},{10:F4},{11:F4},{12:F4},{13:F4},{14:F4},{15:F4},{16:F4},{17:F4},{18:F4},{19:F4}\n",
             Time.time,
@@ -151,14 +145,11 @@ public class SerialReader : MonoBehaviour
 
     private void SaveLogFile()
     {
-        // Si no hay datos, no hacemos nada.
         if (csvBuilder == null || csvBuilder.Length <= 0) return;
 
-        // Escribimos todo el contenido del StringBuilder al archivo.
         File.WriteAllText(csvFilePath, csvBuilder.ToString());
         Debug.Log($"¡Datos guardados! Se ha creado el archivo: {csvFilePath}");
 
-        // Limpiamos la memoria.
         csvBuilder = null;
     }
 }

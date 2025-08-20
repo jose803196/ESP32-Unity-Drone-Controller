@@ -29,7 +29,6 @@ public class DroneAudioController : MonoBehaviour
     [Tooltip("La velocidad del Rigidbody que se considerará 'máxima potencia' para el audio y las hélices.")]
     public float maxSpeedForEffects = 20.0f;
 
-    // --- ¡NUEVAS VARIABLES PARA DETECTAR EL ESTADO DE VUELO! ---
     [Header("Detección de Vuelo")]
     [Tooltip("La capa(s) que el dron considerará como 'suelo'.")]
     public LayerMask groundLayer;
@@ -38,12 +37,10 @@ public class DroneAudioController : MonoBehaviour
     [Tooltip("Factor de potencia mínimo cuando el dron está flotando en el aire sin moverse. Mantiene las hélices activas.")]
     [Range(0.0f, 1.0f)]
     public float hoverPowerFactor = 0.15f;
-    // --------------------------------------------------------------------
 
-    // Variables internas
     private float currentPowerFactor = 0f;
     private bool isEngineOn = false;
-    private bool isGrounded = true; // Asumimos que empieza en el suelo.
+    private bool isGrounded = true;
 
     void Awake()
     {
@@ -61,59 +58,42 @@ public class DroneAudioController : MonoBehaviour
         isEngineOn = true;
         audioSource.Play();
         audioSource.pitch = minPitch;
-        audioSource.volume = 0f; // Empezamos en silencio, se activará al despegar.
+        audioSource.volume = 0f;
     }
 
     void Update()
     {
         if (!isEngineOn) return;
-
-        // --- ¡NUEVA LÓGICA DE DETECCIÓN! ---
         CheckIfGrounded();
-        // ------------------------------------
 
-        // 1. Calcular el "factor de potencia" basado en la velocidad.
         float verticalVelocity = Mathf.Abs(rb.velocity.y);
         float horizontalVelocity = new Vector2(rb.velocity.x, rb.velocity.z).magnitude;
         float combinedSpeed = verticalVelocity + horizontalVelocity;
         float speedBasedPower = Mathf.InverseLerp(0, maxSpeedForEffects, combinedSpeed);
 
-        // --- ¡LÓGICA MEJORADA! ---
-        // Si estamos en el aire, el factor de potencia NUNCA será menor que el de 'hover'.
-        // Si estamos en el suelo, puede ser 0 si la velocidad es 0.
         float basePower = isGrounded ? 0f : hoverPowerFactor;
         currentPowerFactor = Mathf.Max(basePower, speedBasedPower);
-        // -----------------------------
 
-        // 2. Aplicar los efectos basados en el factor de potencia.
         UpdateAudio();
         UpdatePropellers();
     }
-
-    // --- ¡NUEVO MÉTODO PARA VERIFICAR LA DISTANCIA AL SUELO! ---
     private void CheckIfGrounded()
     {
-        // Lanzamos un rayo invisible desde la posición del dron hacia abajo.
         RaycastHit hit;
         if (Physics.Raycast(transform.position, Vector3.down, out hit, groundedThreshold, groundLayer))
         {
-            // Si el rayo choca con algo en la capa 'ground' dentro de la distancia, estamos en el suelo.
             isGrounded = true;
         }
         else
         {
-            // Si no, estamos volando.
             isGrounded = false;
         }
     }
-    // -----------------------------------------------------------
-
     private void UpdateAudio()
     {
         float targetPitch = Mathf.Lerp(minPitch, maxPitch, currentPowerFactor);
         float targetVolume = Mathf.Lerp(minVolume, maxVolume, currentPowerFactor);
 
-        // Si estamos en el suelo y sin movernos, forzamos el silencio.
         if (isGrounded && rb.velocity.magnitude < 0.1f)
         {
             targetVolume = 0f;
@@ -129,7 +109,6 @@ public class DroneAudioController : MonoBehaviour
 
         float rotationSpeed = Mathf.Lerp(minRotationSpeed, maxRotationSpeed, currentPowerFactor);
 
-        // Si estamos en el suelo y casi quietos, apagamos la rotación.
         if (isGrounded && rb.velocity.magnitude < 0.1f)
         {
             rotationSpeed = 0f;
@@ -147,7 +126,6 @@ public class DroneAudioController : MonoBehaviour
             }
         }
     }
-
     public void StopEngine()
     {
         isEngineOn = false;

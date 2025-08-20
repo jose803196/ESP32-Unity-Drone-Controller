@@ -11,11 +11,10 @@ public class PreGameController : MonoBehaviour{
     [SerializeField] private string portName = "COM3";
     [SerializeField] private int baudRate = 115200;
 
-    // --- CORRECCIÓN DE TIPO: De 'Text' a 'TextMeshProUGUI' ---
     [Header("Referencias a la UI")]
-    public TextMeshProUGUI choiceTextDrone;      // <-- CORREGIDO
-    public TextMeshProUGUI choiceTextScenery;    // <-- CORREGIDO
-    public TextMeshProUGUI choiceTextFlightMode; // <-- CORREGIDO
+    public TextMeshProUGUI choiceTextDrone;
+    public TextMeshProUGUI choiceTextScenery;
+    public TextMeshProUGUI choiceTextFlightMode;
     public Button startFlightButton;
 
     [Header("Referencias de Navegación")]
@@ -141,18 +140,14 @@ public class PreGameController : MonoBehaviour{
 
     private void UpdateVisuals()
     {
-        // Actualizar el texto de las opciones (esto se queda igual)
         choiceTextDrone.text = allOptions[0][selectedIndices[0]];
         choiceTextScenery.text = allOptions[1][selectedIndices[1]];
         choiceTextFlightMode.text = allOptions[2][selectedIndices[2]];
 
-        // --- NUEVA LÓGICA DE RESALTADO ---
-        // En lugar de mover un indicador, le decimos al EventSystem qué objeto seleccionar.
         GameObject objectToSelect = null;
         switch (currentRow)
         {
             case 0: // Fila Drone
-                    // Por defecto, seleccionamos el botón izquierdo de la fila
                 objectToSelect = droneLeft.gameObject;
                 break;
             case 1: // Fila Scenery
@@ -166,7 +161,6 @@ public class PreGameController : MonoBehaviour{
                 break;
         }
 
-        // ¡La magia está aquí! Esto le dice a Unity que ponga el foco en el objeto.
         if (objectToSelect != null)
         {
             EventSystem.current.SetSelectedGameObject(objectToSelect);

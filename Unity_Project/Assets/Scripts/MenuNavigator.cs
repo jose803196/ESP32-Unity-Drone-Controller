@@ -1,21 +1,18 @@
 using UnityEngine;
 using System.IO.Ports;
 using System;
-using UnityEngine.UI;              // Para interactuar con los Botones.
-using UnityEngine.EventSystems;    // Para controlar la selección de la UI.
-using UnityEngine.SceneManagement; // Para cambiar de escena.
+using UnityEngine.UI;
+using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 
-// Este script único maneja tanto la comunicación serie como la navegación del MainMenu.
 public class MenuNavegator : MonoBehaviour{
-    // --- Variables de Comunicación Serial ---
     private SerialPort serial;
     [SerializeField] private string portName = "COM3";
     [SerializeField] private int baudRate = 115200;
 
-    // --- Variables para el Control del Menú ---
     [Header("UI del Menú Principal")]
     [Tooltip("Arrastra aquí los botones del menú en orden: PLAY primero, QUIT después.")]
-    [SerializeField] private Button[] menuButtons; // Un array para los botones PLAY y QUIT
+    [SerializeField] private Button[] menuButtons;
 
     private int selectedIndex = 0;
     private bool upButtonPressed = false;
@@ -23,7 +20,6 @@ public class MenuNavegator : MonoBehaviour{
     private bool selectButtonPressed = false;
 
     void Start(){
-        // Parte 1: Abrir el puerto serie (tu código original)
         try{
             serial = new SerialPort(portName, baudRate);
             serial.ReadTimeout = 1000;
@@ -33,8 +29,6 @@ public class MenuNavegator : MonoBehaviour{
         catch (Exception e){
             Debug.LogError("Error al abrir el puerto serial: " + e.Message);
         }
-
-        // Parte 2: Resaltar el primer botón del menú
         if (menuButtons != null && menuButtons.Length > 0){
             EventSystem.current.SetSelectedGameObject(menuButtons[selectedIndex].gameObject);
         }
@@ -48,26 +42,21 @@ public class MenuNavegator : MonoBehaviour{
                     string[] values = line.Split(',');
 
                     if (values.Length == 13){
-                        // 1. Leemos los datos de los botones que nos interesan
-                        int btnDown = int.Parse(values[0]);   // "Avanzar" = Botón de ABAJO
-                        int btnUp = int.Parse(values[1]);     // "Retroceder" = Botón de ARRIBA
-                        int btnSelect = int.Parse(values[4]);   // Botón del Joystick = Botón de SELECCIÓN
+                        int btnDown = int.Parse(values[0]);
+                        int btnUp = int.Parse(values[1]);
+                        int btnSelect = int.Parse(values[4]);
 
-                        // 2. Lógica de navegación vertical (Subir y Bajar)
                         HandleNavigation(btnUp, btnDown);
 
-                        // 3. Lógica de selección (Hacer clic)
                         HandleSelection(btnSelect);
                     }
                 }
             }
             catch (Exception){
-                // Dejamos tu catch vacío original
             }
         }
     }
 
-    // --- Lógica de Navegación del Menú (Añadida a tu código) ---
     private void HandleNavigation(int up, int down){
         if (up == 1 && !upButtonPressed){
             upButtonPressed = true;
@@ -103,8 +92,6 @@ public class MenuNavegator : MonoBehaviour{
             selectButtonPressed = false;
         }
     }
-
-    // --- Funciones que serán llamadas por los botones en la UI ---
     public void PlayGame(){
         SceneManager.LoadScene("PreGameMenu");
     }
