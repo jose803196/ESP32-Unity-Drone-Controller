@@ -138,6 +138,9 @@ The repository is organized into four main sections for clarity and modularity:
 *   <a href="https://www.linkedin.com/in/jose803196/">
       <img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn"/>
     </a>
+*   <a href="https://www.pcbway.com/">
+      <img src="pcbway-logo-color.svg" alt="PCBWay Logo" height="28">
+    </a>
 
 ---
 <div align="center">

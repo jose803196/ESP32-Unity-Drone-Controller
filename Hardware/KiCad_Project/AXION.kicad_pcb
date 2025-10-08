@@ -390,20 +390,9 @@
 			(uuid "8e5db4a1-7fa3-4323-8220-445fe29c4941")
 		)
 		(embedded_fonts no)
-		(model "${KICAD9_3DMODEL_DIR}/Button_Switch_THT.3dshapes/SW_PUSH-12mm.wrl"
+		(model "C:/Users/joseg/Desktop/10mo_SEMESTRE/LABORATORIO_DE_PROYECTOS/mi-proyecto-dron/Hardware/Tactile Push Button B3F-405 12X12x7.3mm with Cap/Push Button B3F-4055 with Cap.STEP"
 			(offset
-				(xyz 0 0 0)
-			)
-			(scale
-				(xyz 1 1 1)
-			)
-			(rotate
-				(xyz -0 -0 -0)
-			)
-		)
-		(model "C:/Users/joseg/Downloads/tactile-push-button-b3f-405-12x12x7-3mm-with-cap-1.snapshot.1/Tactile Push Button B3F-405 12X12x7.3mm with Cap/Push Button B3F-4055 with Cap.STEP"
-			(offset
-				(xyz 3.5 10.5 10.5)
+				(xyz 3.35 10.5 10.5)
 			)
 			(scale
 				(xyz 1 1 1)
@@ -2344,20 +2333,9 @@
 			(uuid "c2d71d8d-e851-4a88-b898-87dacf4c41e3")
 		)
 		(embedded_fonts no)
-		(model "${KICAD9_3DMODEL_DIR}/TerminalBlock.3dshapes/TerminalBlock_Xinya_XY308-2.54-8P_1x08_P2.54mm_Horizontal.wrl"
+		(model "C:/Users/joseg/Desktop/10mo_SEMESTRE/LABORATORIO_DE_PROYECTOS/mi-proyecto-dron/Hardware/MPU6050.stp"
 			(offset
-				(xyz 0 0 0)
-			)
-			(scale
-				(xyz 1 1 1)
-			)
-			(rotate
-				(xyz 0 0 0)
-			)
-		)
-		(model "C:/Users/joseg/Downloads/mpu6050-4.snapshot.3/MPU6050.stp"
-			(offset
-				(xyz 1.75 9.8 -7.8)
+				(xyz 1.75 9.75 -8)
 			)
 			(scale
 				(xyz 1 1 1)
@@ -2529,18 +2507,18 @@
 		(model "${KICAD9_3DMODEL_DIR}/Buzzer_Beeper.3dshapes/Buzzer_15x7.5RM7.6.wrl"
 			(hide yes)
 			(offset
-				(xyz 0 0 0)
+				(xyz 1 0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz 0 0 0)
+				(xyz -0 -0 -0)
 			)
 		)
-		(model "C:/Users/joseg/Downloads/speaker-buzzer-5v-1.snapshot.1/buzzer-5V.STEP"
+		(model "C:/Users/joseg/Desktop/10mo_SEMESTRE/LABORATORIO_DE_PROYECTOS/mi-proyecto-dron/Hardware/buzzer-5V.STEP"
 			(offset
-				(xyz 4 0 0.5)
+				(xyz 3.75 0 0.4)
 			)
 			(scale
 				(xyz 1 1 1)
@@ -3681,10 +3659,9 @@
 				(xyz -0 -0 -0)
 			)
 		)
-		(model "C:/Users/joseg/Downloads/esp32-wroom32-1.snapshot.1/ESP32-WROOM-32.step"
-			(opacity 0.9600)
+		(model "C:/Users/joseg/Desktop/10mo_SEMESTRE/LABORATORIO_DE_PROYECTOS/mi-proyecto-dron/Hardware/ESP32-WROOM-32.step"
 			(offset
-				(xyz 9 -0.7 -3)
+				(xyz 9.25 -0.5 -3)
 			)
 			(scale
 				(xyz 1 1 1)
@@ -4500,20 +4477,9 @@
 			(uuid "f6b088cf-fbd2-4619-ac12-1e77924e0290")
 		)
 		(embedded_fonts no)
-		(model "${KICAD9_3DMODEL_DIR}/Button_Switch_THT.3dshapes/SW_PUSH-12mm.wrl"
+		(model "C:/Users/joseg/Desktop/10mo_SEMESTRE/LABORATORIO_DE_PROYECTOS/mi-proyecto-dron/Hardware/Tactile Push Button B3F-405 12X12x7.3mm with Cap/Push Button B3F-4055 with Cap.STEP"
 			(offset
-				(xyz 0 0 0)
-			)
-			(scale
-				(xyz 1 1 1)
-			)
-			(rotate
-				(xyz 0 0 0)
-			)
-		)
-		(model "C:/Users/joseg/Downloads/tactile-push-button-b3f-405-12x12x7-3mm-with-cap-1.snapshot.1/Tactile Push Button B3F-405 12X12x7.3mm with Cap/Push Button B3F-4055 with Cap.STEP"
-			(offset
-				(xyz 3.5 10.5 10.5)
+				(xyz 3.35 10.5 10.5)
 			)
 			(scale
 				(xyz 1 1 1)
@@ -5422,9 +5388,9 @@
 				(xyz -0 -0 -0)
 			)
 		)
-		(model "C:/Users/joseg/Downloads/ky-023-joystick-module-1.snapshot.4/KY-023_Joystick-Module.step"
+		(model "C:/Users/joseg/Desktop/10mo_SEMESTRE/LABORATORIO_DE_PROYECTOS/mi-proyecto-dron/Hardware/KY-023_Joystick-Module.step"
 			(offset
-				(xyz -27 -5.5 10)
+				(xyz -27 -6 10.25)
 			)
 			(scale
 				(xyz 1 1 1)
@@ -6208,20 +6174,9 @@
 			(uuid "a0026da6-7b22-4d01-8a9e-509ddc5bc412")
 		)
 		(embedded_fonts no)
-		(model "${KICAD9_3DMODEL_DIR}/Button_Switch_THT.3dshapes/SW_PUSH-12mm.wrl"
+		(model "C:/Users/joseg/Desktop/10mo_SEMESTRE/LABORATORIO_DE_PROYECTOS/mi-proyecto-dron/Hardware/Tactile Push Button B3F-405 12X12x7.3mm with Cap/Push Button B3F-4055 with Cap.STEP"
 			(offset
-				(xyz 0 0 0)
-			)
-			(scale
-				(xyz 1 1 1)
-			)
-			(rotate
-				(xyz 0 0 0)
-			)
-		)
-		(model "C:/Users/joseg/Downloads/tactile-push-button-b3f-405-12x12x7-3mm-with-cap-1.snapshot.1/Tactile Push Button B3F-405 12X12x7.3mm with Cap/Push Button B3F-4055 with Cap.STEP"
-			(offset
-				(xyz 3.5 10.5 10.5)
+				(xyz 3.35 10.5 10.5)
 			)
 			(scale
 				(xyz 1 1 1)
@@ -6455,20 +6410,9 @@
 			(uuid "2d9a1d86-c1a7-4fc1-875d-c011e7606860")
 		)
 		(embedded_fonts no)
-		(model "${KICAD9_3DMODEL_DIR}/Button_Switch_THT.3dshapes/SW_PUSH-12mm.wrl"
+		(model "C:/Users/joseg/Desktop/10mo_SEMESTRE/LABORATORIO_DE_PROYECTOS/mi-proyecto-dron/Hardware/Tactile Push Button B3F-405 12X12x7.3mm with Cap/Push Button B3F-4055 with Cap.STEP"
 			(offset
-				(xyz 0 0 0)
-			)
-			(scale
-				(xyz 1 1 1)
-			)
-			(rotate
-				(xyz 0 0 0)
-			)
-		)
-		(model "C:/Users/joseg/Downloads/tactile-push-button-b3f-405-12x12x7-3mm-with-cap-1.snapshot.1/Tactile Push Button B3F-405 12X12x7.3mm with Cap/Push Button B3F-4055 with Cap.STEP"
-			(offset
-				(xyz 3.5 10.5 10.5)
+				(xyz 3.35 10.5 10.5)
 			)
 			(scale
 				(xyz 1 1 1)
