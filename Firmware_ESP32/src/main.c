@@ -1,7 +1,3 @@
-// =================================================================================
-// CÓDIGO COMPLETO Y FINAL USANDO LOS PINES 12, 13 Y 14 PARA LOS LEDS
-// RECUERDA: ES NECESARIO AÑADIR UNA RESISTENCIA DE PULL-DOWN DE 10kΩ EN GPIO 12.
-// =================================================================================
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
@@ -17,12 +13,10 @@
 #include "esp_now.h"
 #include "esp_log.h"
 
-// --- MAPEO DE PINES AJUSTADO A TU HARDWARE (12, 13, 14) ---
 #define LED_G_PIN        GPIO_NUM_12    // Verde (RUNNING) en GPIO 12.
 #define LED_R_PIN        GPIO_NUM_13    // Rojo (INICIO) en GPIO 13 (Pin seguro)
 #define LED_B_PIN        GPIO_NUM_14    // Azul (CRASH) en GPIO 14 (Pin seguro)
 
-// Resto de pines (Mapeo "Seguro" anterior)
 #define JOYSTICK_X_PIN   ADC1_CHANNEL_4 // GPIO32
 #define JOYSTICK_Y_PIN   ADC1_CHANNEL_5 // GPIO33
 #define JOYSTICK_SW_PIN  GPIO_NUM_27
@@ -75,10 +69,6 @@ void app_main(void) {
     ESP_ERROR_CHECK(esp_now_add_peer(&peer_info));
     
     configurar_gpios();
-    
-    // Estado inicial "Buscando": Azul encendido
-    //gpio_set_level(LED_R_PIN, 1);
-
     configurar_joystick_adc();
     configurar_mpu6050();
     

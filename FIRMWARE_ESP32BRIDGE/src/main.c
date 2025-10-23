@@ -9,7 +9,6 @@
 #include "esp_log.h"
 #include "mpu6050.h"
 
-// --- NUEVO: Estructura de datos ampliada (DEBE ser IDÉNTICA a la del controlador) ---
 typedef struct {
     int btn_avanzar, btn_retroceder, btn_izquierda, btn_derecha, btn_joystick;
     int joy_x, joy_y;
